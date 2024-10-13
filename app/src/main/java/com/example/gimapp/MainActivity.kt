@@ -1,5 +1,6 @@
 package com.example.gimapp
 
+import GimAppController
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -7,9 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
-import com.example.gimapp.pantallas.NextEjercicio
 import com.example.gimapp.ui.theme.GimAppTheme
-import com.example.gimapp.pantallas.SelectRutina
 
 private const val TAG = "MainActivity"
 
@@ -20,14 +19,20 @@ class MainActivity : ComponentActivity() {
         Log.d(TAG, "onCreate Called")
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val controller : GimAppController = GimAppController()
+
         setContent {
             GimAppTheme {
-                NextEjercicio()
+                controller.StartApp()
             }
         }
     }
 
-    override fun onStart() {
+}
+
+/*
+        override fun onStart() {
         super.onStart()
         Log.d(TAG, "onStart Called")
     }
@@ -56,6 +61,7 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
         Log.d(TAG, "onDestroy Called")
     }
-}
+
+ */
 
 

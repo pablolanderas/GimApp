@@ -1,4 +1,4 @@
-package com.example.gimapp.pantallas
+package com.example.gimapp.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -15,13 +15,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.gimapp.componentes.Recubrimiento
+import com.example.gimapp.components.Header
 import com.example.gimapp.ui.theme.GimAppTheme
 
 @Composable
 fun MenuButton(
     modifier: Modifier = Modifier,
-    text:String
+    text:String,
+    onClicked: () -> Unit = {}
 ) {
     Button(
         modifier = modifier
@@ -33,7 +34,7 @@ fun MenuButton(
                 color = MaterialTheme.colorScheme.primary,
                 shape = RoundedCornerShape(bottomStart = 16.dp, topEnd = 16.dp)
             ),
-        onClick = { /*TODO*/ }
+        onClick = onClicked
     ) {
         Text(
             text = text,
@@ -46,12 +47,14 @@ fun MenuButton(
 }
 
 @Composable
-fun PaginaInicio() {
-    Recubrimiento(
+fun MainMenu(
+    onNewTrainClicked: () -> Unit
+) {
+    Header(
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        MenuButton(text = "Nuevo entrenamiento")
+        MenuButton(text = "Nuevo entrenamiento", onClicked = onNewTrainClicked)
         MenuButton(text = "Historial")
         MenuButton(text = "Rutinas")
         MenuButton(text = "Ejercicios")
@@ -63,6 +66,6 @@ fun PaginaInicio() {
 @Composable
 fun PreviewPaginaInicio() {
     GimAppTheme {
-        PaginaInicio()
+        MainMenu({})
     }
 }

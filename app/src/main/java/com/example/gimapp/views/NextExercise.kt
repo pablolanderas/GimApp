@@ -1,4 +1,4 @@
-package com.example.gimapp.pantallas
+package com.example.gimapp.views
 
 import android.annotation.SuppressLint
 import android.icu.text.DecimalFormat
@@ -37,25 +37,25 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.gimapp.R
-import com.example.gimapp.componentes.Recubrimiento
-import com.example.gimapp.dominio.EjercicioRutina
-import com.example.gimapp.dominio.EntrenamientoEjercicio
-import com.example.gimapp.dominio.Rutina
-import com.example.gimapp.dominio.historialPressBanca
-import com.example.gimapp.dominio.rutinasPrueba
+import com.example.gimapp.components.Header
+import com.example.gimapp.domain.Exercise
+import com.example.gimapp.domain.ExerciseRutine
+import com.example.gimapp.domain.TrainingExercise
+import com.example.gimapp.domain.Rutine
+import com.example.gimapp.domain.rutinasPrueba
 import com.example.gimapp.ui.theme.GimAppTheme
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
-fun BarraInfo(
-    titulo: String,
-    estiloTitulo: TextStyle = TextStyle(
+fun InfoBar(
+    title: String,
+    titleStyle: TextStyle = TextStyle(
         color = MaterialTheme.colorScheme.primary,
         fontSize = MaterialTheme.typography.bodyMedium.fontSize
     ),
-    valor: String,
-    estiloValor: TextStyle = TextStyle(
+    value: String,
+    valueStyle: TextStyle = TextStyle(
         color = Color.White,
         fontSize = MaterialTheme.typography.bodyMedium.fontSize
     ),
@@ -64,25 +64,25 @@ fun BarraInfo(
 ) {
     Row(modifier = modifier){
         Text(
-            text = titulo,
-            style = estiloTitulo
+            text = title,
+            style = titleStyle
         )
         Spacer(modifier = Modifier.weight(1F))
         content()
         Text(
-            text = valor,
-            style = estiloValor
+            text = value,
+            style = valueStyle
         )
     }
 }
 
 @SuppressLint("DefaultLocale")
 @Composable
-fun InfoEjercicio(
-    ejercicioRutina: EjercicioRutina,
-    peso: Double,
-    subirPeso: Boolean,
-    bajarPeso: Boolean
+fun ExerciseInfo(
+    exerciseRutine: ExerciseRutine,
+    weight: Double,
+    addWeight: Boolean,
+    removeWeight: Boolean
 ) {
     Column(
         modifier = Modifier
@@ -93,7 +93,7 @@ fun InfoEjercicio(
             )
     ){
         Text(
-            text = ejercicioRutina.ejercicio.nombre.replaceFirstChar { it.uppercase() },
+            text = exerciseRutine.exercise.name.replaceFirstChar { it.uppercase() },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
@@ -111,9 +111,9 @@ fun InfoEjercicio(
                     shape = RoundedCornerShape(15.dp)
                 )
         ){
-            BarraInfo(
-                titulo = "Modo:",
-                valor = ejercicioRutina.ejercicio.modo.replaceFirstChar { it.uppercase() },
+            InfoBar(
+                title = "Modo:",
+                value = exerciseRutine.exercise.mode.replaceFirstChar { it.uppercase() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
@@ -122,9 +122,9 @@ fun InfoEjercicio(
                         end = 20.dp,
                     )
             )
-            BarraInfo(
-                titulo = "Series:",
-                valor = "x${ejercicioRutina.series}",
+            InfoBar(
+                title = "Series:",
+                value = "x${exerciseRutine.sets}",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
@@ -133,9 +133,9 @@ fun InfoEjercicio(
                         end = 20.dp,
                     )
             )
-            BarraInfo(
-                titulo = "Repeticiones:",
-                valor = "${ejercicioRutina.minRepeticiones}-${ejercicioRutina.maxRepeticiones}",
+            InfoBar(
+                title = "Repeticiones:",
+                value = "${exerciseRutine.minReps}-${exerciseRutine.maxReps}",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
@@ -144,9 +144,9 @@ fun InfoEjercicio(
                         end = 20.dp,
                     )
             )
-            BarraInfo(
-                titulo = "Peso:",
-                valor = "${DecimalFormat("#.##").format(peso)} kg",
+            InfoBar(
+                title = "Peso:",
+                value = "${DecimalFormat("#.##").format(weight)} kg",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
@@ -156,12 +156,12 @@ fun InfoEjercicio(
                         bottom = 10.dp
                     )
             ) {
-                if (subirPeso)
+                if (addWeight)
                     Image(
                         painter = painterResource(id = R.drawable.flecha_arriba),
                         contentDescription = null
                     )
-                if (bajarPeso)
+                if (removeWeight)
                     Image(
                         painter = painterResource(id = R.drawable.flecha_abajo),
                         contentDescription = null
@@ -173,7 +173,7 @@ fun InfoEjercicio(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HistorialEjercicio(historial: List<EntrenamientoEjercicio>) {
+fun ExerciseHistorical(historical: List<TrainingExercise>) {
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
@@ -183,7 +183,7 @@ fun HistorialEjercicio(historial: List<EntrenamientoEjercicio>) {
                 shape = RoundedCornerShape(15.dp)
             )
     ) {
-        items(historial) { entrenamiento ->
+        items(historical) { entrenamiento ->
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -193,7 +193,7 @@ fun HistorialEjercicio(historial: List<EntrenamientoEjercicio>) {
                         shape = RoundedCornerShape(15.dp)
                     )
             ){
-                entrenamiento.fecha?.let {
+                entrenamiento.date?.let {
                     Text(
                         text = it.format(
                             DateTimeFormatter.ofPattern(
@@ -205,31 +205,31 @@ fun HistorialEjercicio(historial: List<EntrenamientoEjercicio>) {
                         modifier = Modifier
                             .padding(horizontal = 15.dp, vertical = 15.dp)
                     )
-                    var peso = DecimalFormat("#.##").format(entrenamiento.series.first().peso)
-                    val pesos = entrenamiento.series.map {it.peso}
+                    var peso = DecimalFormat("#.##").format(entrenamiento.sets.first().weight)
+                    val pesos = entrenamiento.sets.map {it.weight}
                     if (pesos.distinct().size != 1)
                         peso = pesos.joinToString(separator = ", ") { DecimalFormat("#.##").format(it) }
-                    BarraInfo(
-                        titulo = "Peso:",
-                        estiloTitulo = TextStyle(
+                    InfoBar(
+                        title = "Peso:",
+                        titleStyle = TextStyle(
                             color = MaterialTheme.colorScheme.secondary,
                             fontSize = MaterialTheme.typography.bodySmall.fontSize
                         ),
-                        valor = "${peso} kg",
-                        estiloValor = TextStyle(
+                        value = "${peso} kg",
+                        valueStyle = TextStyle(
                             color = Color.White,
                             fontSize = MaterialTheme.typography.bodySmall.fontSize
                         ),
                         modifier = Modifier.padding(start = 15.dp, end = 15.dp, bottom = 7.dp)
                     )
-                    BarraInfo(
-                        titulo = "Repeticiones:",
-                        estiloTitulo = TextStyle(
+                    InfoBar(
+                        title = "Repeticiones:",
+                        titleStyle = TextStyle(
                             color = MaterialTheme.colorScheme.secondary,
                             fontSize = MaterialTheme.typography.bodySmall.fontSize
                         ),
-                        valor = "${entrenamiento.series.map { it.repeticiones }.joinToString(separator = ", ")}",
-                        estiloValor = TextStyle(
+                        value = entrenamiento.sets.map { it.reps }.joinToString(separator = ", "),
+                        valueStyle = TextStyle(
                             color = Color.White,
                             fontSize = MaterialTheme.typography.bodySmall.fontSize
                         ),
@@ -243,10 +243,16 @@ fun HistorialEjercicio(historial: List<EntrenamientoEjercicio>) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun NextEjercicio() {
+fun NextExercise(
+    exerciseRutine: ExerciseRutine,
+    historical: List<TrainingExercise>,
+    onSkipExercise: () -> Unit,
+    onStartExercise: () -> Unit,
+    onOtherExercise: () -> Unit
+) {
     val rutinas = rutinasPrueba
-    var selectedOption: Rutina? by remember { mutableStateOf(null) }
-    Recubrimiento(
+    var selectedOption: Rutine? by remember { mutableStateOf(null) }
+    Header(
         verticalArrangement = Arrangement.SpaceEvenly,
     ) {
         Column(
@@ -262,11 +268,11 @@ fun NextEjercicio() {
                 modifier = Modifier.padding(top = 25.dp, bottom = 15.dp)
 
             )
-            InfoEjercicio(
-                ejercicioRutina = rutinasPrueba[0].ejercicios[0],
-                peso = 70.0,
-                subirPeso = true,
-                bajarPeso = false)
+            ExerciseInfo(
+                exerciseRutine = exerciseRutine,
+                weight = 70.0,
+                addWeight = true,
+                removeWeight = false)
             Text(
                 text = "Historial:",
                 color = Color(0xFFFFFFFF),
@@ -275,13 +281,13 @@ fun NextEjercicio() {
                 ),
                 modifier = Modifier.padding(top = 25.dp, bottom = 15.dp)
             )
-            HistorialEjercicio(historialPressBanca)
+            ExerciseHistorical(historical)
             Row(modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 20.dp)) {
                 Spacer(modifier = Modifier.weight(1F))
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = onStartExercise,
                     modifier = Modifier
                         .background(
                             color = MaterialTheme.colorScheme.primary,
@@ -299,7 +305,7 @@ fun NextEjercicio() {
                 .fillMaxWidth()
                 .padding(top = 10.dp, bottom = 25.dp)) {
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = onOtherExercise,
                     modifier = Modifier
                         .weight(0.2f)
                         .border(
@@ -324,7 +330,7 @@ fun NextEjercicio() {
                 }
                 Spacer(modifier = Modifier.weight(0.3f))
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = onSkipExercise,
                     modifier = Modifier
                         .weight(0.2f)
                         .border(
@@ -357,6 +363,17 @@ fun NextEjercicio() {
 @Composable
 fun PrevieNextEjercicio() {
     GimAppTheme {
-        NextEjercicio()
+        NextExercise(
+            exerciseRutine = ExerciseRutine(
+                exercise = Exercise("press banca", "con banca"),
+                sets = 4,
+                minReps = 8,
+                maxReps = 10
+            ),
+            historical = emptyList<TrainingExercise>(),
+            onSkipExercise = {},
+            onStartExercise = {},
+            onOtherExercise = {}
+        )
     }
 }

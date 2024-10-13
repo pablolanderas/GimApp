@@ -1,4 +1,4 @@
-package com.example.gimapp.pantallas
+package com.example.gimapp.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -37,18 +37,17 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.gimapp.componentes.Recubrimiento
-import com.example.gimapp.dominio.EjercicioRutina
-import com.example.gimapp.dominio.Rutina
-import com.example.gimapp.dominio.rutinasPrueba
+import com.example.gimapp.components.Header
+import com.example.gimapp.domain.ExerciseRutine
+import com.example.gimapp.domain.Rutine
 import com.example.gimapp.ui.theme.GimAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DropListRutina(
-    options: List<Rutina>,
-    selectedOption: Rutina?,
-    optionSelected: (Rutina) -> Unit
+fun DropListRutine(
+    options: List<Rutine>,
+    selectedOption: Rutine?,
+    optionSelected: (Rutine) -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -74,7 +73,7 @@ fun DropListRutina(
             onExpandedChange = { expanded = !expanded }
         ) {
             TextField(
-                value = selectedOption?.nombre ?: "Seleccione una rutina",
+                value = selectedOption?.name ?: "Seleccione una rutina",
                 onValueChange = { },
                 readOnly = true,
                 textStyle = TextStyle(
@@ -114,7 +113,7 @@ fun DropListRutina(
             ) {
                 options.forEach { option ->
                     DropdownMenuItem(
-                        text = { Text(option.nombre) },
+                        text = { Text(option.name) },
                         onClick = {
                             optionSelected(option)
                             expanded = false
@@ -127,8 +126,8 @@ fun DropListRutina(
 }
 
 @Composable
-fun ListaEjerciciosRutina(rutina: Rutina?) {
-    val ejercicios = rutina?.ejercicios ?: emptyList<EjercicioRutina>()
+fun ListExercisesRutine(rutine: Rutine?) {
+    val ejercicios = rutine?.exercises ?: emptyList<ExerciseRutine>()
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -165,7 +164,7 @@ fun ListaEjerciciosRutina(rutina: Rutina?) {
                         )
                 ) {
                     Text(
-                        text = ejercicio.ejercicio.nombre.replaceFirstChar { it.uppercase() },
+                        text = ejercicio.exercise.name.replaceFirstChar { it.uppercase() },
                         modifier = Modifier.padding(16.dp),
                         style = TextStyle(
                             color = Color.White
@@ -173,7 +172,7 @@ fun ListaEjerciciosRutina(rutina: Rutina?) {
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
-                        text = "x${ejercicio.series}",
+                        text = "x${ejercicio.sets}",
                         modifier = Modifier
                             .padding(16.dp),
                         style = TextStyle(
@@ -187,10 +186,12 @@ fun ListaEjerciciosRutina(rutina: Rutina?) {
 }
 
 @Composable
-fun SelectRutina() {
-    val rutinas = rutinasPrueba
-    var selectedOption: Rutina? by remember { mutableStateOf(null) }
-    Recubrimiento() {
+fun SelectRutine(
+    onRutineSelected : (Rutine) -> Unit,
+    rutines: List<Rutine>
+) {
+    var selectedOption: Rutine? by remember { mutableStateOf(null) }
+    Header() {
         Box(modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 30.dp)
@@ -199,13 +200,13 @@ fun SelectRutina() {
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.SpaceEvenly
             ){
-                DropListRutina(
-                    rutinasPrueba,
+                DropListRutine(
+                    rutines,
                     selectedOption,
                     { selectedOption = it }
                 )
 
-                ListaEjerciciosRutina(selectedOption)
+                ListExercisesRutine(selectedOption)
 
                 Button(
                     modifier = Modifier
@@ -218,7 +219,7 @@ fun SelectRutina() {
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.secondary
                     ),
-                    onClick = { /*TODO*/ }
+                    onClick = { selectedOption?.let { onRutineSelected(it) } }
                 ){
                     Text(
                         text = "EMPEZAR",
@@ -238,6 +239,6 @@ fun SelectRutina() {
 @Composable
 fun PreviewSelectRutina() {
     GimAppTheme {
-        SelectRutina()
+        SelectRutine({}, emptyList())
     }
 }

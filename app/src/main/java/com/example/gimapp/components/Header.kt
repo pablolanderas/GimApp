@@ -1,4 +1,4 @@
-package com.example.gimapp.componentes
+package com.example.gimapp.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.example.gimapp.R
 
 @Composable
-fun Recubrimiento(
+fun Header(
     modifier: Modifier = Modifier,
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
