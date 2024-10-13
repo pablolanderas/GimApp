@@ -5,10 +5,6 @@ import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -41,7 +37,6 @@ class GimAppController(
     @Composable
     fun StartApp() {
         navController = rememberNavController()
-        val uiState by viewModel.uiState.collectAsState()
         NavHost(
             navController = navController,
             startDestination = GimScreens.Start.name
@@ -83,7 +78,7 @@ class GimAppController(
                     exerciseRutine = exerciseRutine,
                     trainingExercise = trainingExercise,
                     lastExerciseSet = if (trainingExercise.sets.isNotEmpty()) trainingExercise.sets.last() else null,
-                    onNext = { weigth: Double, reps: Int, context: Context -> Unit
+                    onNext = { weigth: Double, reps: Int, context: Context ->
                         trainingExercise.sets.add(ExerciseSet(weight = weigth, reps = reps, effort = -1))
                         endAndCheckRemainingSets(
                             trainingExercise = trainingExercise,

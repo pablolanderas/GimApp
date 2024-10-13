@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val controller : GimAppController = GimAppController()
+        val controller = GimAppController()
 
         setContent {
             GimAppTheme {

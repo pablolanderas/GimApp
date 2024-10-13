@@ -1,7 +1,6 @@
 package com.example.gimapp
 
 import android.os.Build
-import android.os.Debug
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
@@ -48,7 +47,7 @@ class AppViewModel : ViewModel() {
     fun setNextRutineExercise(t: TrainingExercise?) {
         if (t != null && t.sets.isNotEmpty())
             _uiState.value.actualTraining?.exercises?.add(t) ?: throw Error("The Training is not inicialiced")
-        Log.d(TAG, "Actual Training: ${_uiState.value.actualTraining?.exercises?.map { it.exercise.name }?.joinToString(", ")?: "Empty"}")
+        Log.d(TAG, "Actual Training: ${_uiState.value.actualTraining?.exercises?.joinToString(", ") { it.exercise.name } ?: "Empty"}")
     }
 
     fun updateRutineToNextExercise() {

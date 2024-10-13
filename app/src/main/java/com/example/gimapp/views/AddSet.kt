@@ -1,7 +1,6 @@
 package com.example.gimapp.views
 
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,7 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -44,15 +42,12 @@ import com.example.gimapp.domain.TrainingExercise
 import com.example.gimapp.ui.theme.GimAppTheme
 import com.example.gimapp.R
 import androidx.compose.material3.TextFieldDefaults.colors
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.sp
 import com.example.gimapp.domain.ExerciseSet
-import kotlinx.coroutines.delay
 
 @Composable
 fun TitleRow(
@@ -89,7 +84,6 @@ fun TitleRow(
 @Composable
 fun WeightAndRepsSelecter(
     modifier: Modifier = Modifier,
-    lastExerciseSet: ExerciseSet? = null,
     weightValue: String,
     repsValue: String,
     onValueChangeWeight: (String) -> Unit,
@@ -362,7 +356,6 @@ fun AddSet(
             Spacer(modifier = Modifier.weight(1f))
             WeightAndRepsSelecter(
                 modifier = Modifier.padding(horizontal = 20.dp),
-                lastExerciseSet = lastExerciseSet,
                 weightValue = weightValue.value,
                 repsValue = repsValue.value,
                 onValueChangeWeight = { weightValue.value = it },

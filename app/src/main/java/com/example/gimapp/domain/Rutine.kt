@@ -39,7 +39,7 @@ class Training(
     val exercises: MutableList<TrainingExercise>
 )
 
-public val rutinasPrueba = mutableListOf(
+val rutinasPrueba = mutableListOf(
     Rutine(
         name = "Pull",
         exercises = mutableListOf(
@@ -136,7 +136,7 @@ public val rutinasPrueba = mutableListOf(
 )
 
 @RequiresApi(Build.VERSION_CODES.O)
-public val historialPressBanca: List<TrainingExercise> = listOf(
+val historialPressBanca: List<TrainingExercise> = listOf(
     TrainingExercise(
         exercise = Exercise("press banca", "normal"),
         date = LocalDate.of(2024, 8, 13),

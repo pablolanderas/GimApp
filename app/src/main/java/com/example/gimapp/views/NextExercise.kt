@@ -250,8 +250,6 @@ fun NextExercise(
     onStartExercise: () -> Unit,
     onOtherExercise: () -> Unit
 ) {
-    val rutinas = rutinasPrueba
-    var selectedOption: Rutine? by remember { mutableStateOf(null) }
     Header(
         verticalArrangement = Arrangement.SpaceEvenly,
     ) {
