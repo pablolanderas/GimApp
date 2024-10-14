@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.example.gimapp.data.AppUiState
 import com.example.gimapp.domain.Exercise
 import com.example.gimapp.domain.ExerciseRutine
+import com.example.gimapp.domain.ExerciseSet
 import com.example.gimapp.domain.Rutine
 import com.example.gimapp.domain.Training
 import com.example.gimapp.domain.TrainingExercise
@@ -44,10 +45,18 @@ class AppViewModel : ViewModel() {
         return _uiState.value.remainingSets
     }
 
+    fun addRemainingSet() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                remainingSets = currentState.remainingSets + 1
+            )
+        }
+    }
+
     fun setNextRutineExercise(t: TrainingExercise?) {
         if (t != null && t.sets.isNotEmpty())
             _uiState.value.actualTraining?.exercises?.add(t) ?: throw Error("The Training is not inicialiced")
-        Log.d(TAG, "Actual Training: ${_uiState.value.actualTraining?.exercises?.joinToString(", ") { it.exercise.name } ?: "Empty"}")
+        Log.d(TAG, "Actual Training: ${_uiState.value.actualTraining?.exercises?.joinToString(", ") { "${it.exercise.name} x${it.sets.size}" } ?: "Empty"}")
     }
 
     fun updateRutineToNextExercise() {
@@ -71,6 +80,10 @@ class AppViewModel : ViewModel() {
         return rutine.exercises.size == exercisePosition + 1
     }
 
+    fun getRemainingSets(): Int {
+        return _uiState.value.remainingSets
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun getExerciseHistorical(e : Exercise) : List<TrainingExercise> {
         Log.d(TAG, "Called the history of ${e.name}")
@@ -79,6 +92,10 @@ class AppViewModel : ViewModel() {
 
     fun getAllRutines() : List<Rutine> {
         return rutinasPrueba
+    }
+
+    fun getLastExerciseSet(e: Exercise): ExerciseSet? {
+        return null
     }
 
 }

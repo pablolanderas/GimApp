@@ -248,7 +248,8 @@ fun ExerciseHistorical(
 
 @Composable
 fun Timer(
-    modifier: Modifier
+    modifier: Modifier,
+    timerValue: String
 ) {
     MiniBox(
         modifier = modifier,
@@ -259,7 +260,7 @@ fun Timer(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "00:30",
+                text = timerValue,
                 color = Color.White,
                 style = TextStyle(
                     fontSize = 40.sp,
@@ -273,37 +274,71 @@ fun Timer(
 @Composable
 fun NavigateButtons(
     modifier: Modifier,
+    state: AddSetState,
     onSkip: () -> Unit,
-    onPrevious: () -> Unit
+    onPrevious: () -> Unit,
+    onAddSet: () -> Unit
 ) {
     Row(modifier = modifier
         .fillMaxWidth()
         .padding(vertical = 25.dp)) {
-        Button(
-            onClick = onPrevious,
-            modifier = Modifier
-                .weight(0.2f)
-                .border(
-                    width = 2.dp,
-                    color = MaterialTheme.colorScheme.tertiary,
-                    shape = RoundedCornerShape(16.dp)
+        if (state != AddSetState.First && state != AddSetState.Unique)
+            Button(
+                onClick = onPrevious,
+                modifier = Modifier
+                    .weight(0.2f)
+                    .border(
+                        width = 2.dp,
+                        color = MaterialTheme.colorScheme.tertiary,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .height(35.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent, // Fondo transparente
+                    contentColor = Color.White // Color del texto
                 )
-                .height(35.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Transparent, // Fondo transparente
-                contentColor = Color.White // Color del texto
-            )
 
-        ) {
-            Text(
-                text = "Anterior",
-                style = MaterialTheme.typography.titleSmall.copy(
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
+            ) {
+                Text(
+                    text = "Anterior",
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
                 )
-            )
+            }
+        else
+            Spacer(modifier = Modifier.weight(0.2f))
+        if (state == AddSetState.Last || state == AddSetState.Unique) {
+            Spacer(modifier = Modifier.weight(0.05f))
+            Button(
+                onClick = onAddSet,
+                modifier = Modifier
+                    .weight(0.2f)
+                    .border(
+                        width = 2.dp,
+                        color = MaterialTheme.colorScheme.tertiary,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .height(35.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent, // Fondo transparente
+                    contentColor = Color.White // Color del texto
+                )
+
+            ) {
+                Text(
+                    text = "Otra",
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
+            Spacer(modifier = Modifier.weight(0.05f))
         }
-        Spacer(modifier = Modifier.weight(0.3f))
+        else
+            Spacer(modifier = Modifier.weight(0.3f))
         Button(
             onClick = onSkip,
             modifier = Modifier
@@ -331,14 +366,25 @@ fun NavigateButtons(
     }
 }
 
+enum class AddSetState {
+    First,
+    Normal,
+    Last,
+    Unique
+}
+
 @Composable
 fun AddSet(
     exerciseRutine: ExerciseRutine,
     trainingExercise: TrainingExercise,
+    timerValue: String,
+    state: AddSetState,
     onNext: (Double, Int, Context) -> Unit,
     onFailNext: (Context) -> Unit,
     onSkip: (Context) -> Unit,
     onPrevious: (Context) -> Unit,
+    onAddSet: () -> Unit,
+    onInfoSelected: () -> Unit,
     lastExerciseSet: ExerciseSet? = null
 ) {
     val context = LocalContext.current
@@ -370,7 +416,8 @@ fun AddSet(
                     modifier = Modifier.weight(1f)
                 )
                 Timer(
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    timerValue = timerValue
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
@@ -394,7 +441,7 @@ fun AddSet(
                         )
                 ) {
                     Text(
-                        text = "SIGUIENTE",
+                        text = if (state != AddSetState.Last) "SIGUIENTE" else "ACABAR",
                         style = MaterialTheme.typography.titleMedium.copy(
                             color = Color.White,
                             fontWeight = FontWeight.Bold
@@ -405,8 +452,10 @@ fun AddSet(
             }
             NavigateButtons(
                 modifier = Modifier.padding(horizontal = 20.dp),
+                state = state,
                 onSkip = { onSkip(context) },
-                onPrevious = { onPrevious(context) }
+                onPrevious = { onPrevious(context) },
+                onAddSet = { onAddSet() }
             )
         }
     }
@@ -428,10 +477,14 @@ fun PrevieAddSet() {
                 date = null,
                 sets = mutableListOf(ExerciseSet(40.0, 8, 0), ExerciseSet(40.0, 8, 0))
             ),
+            timerValue = "00:30",
+            state = AddSetState.Unique,
             onNext = { s1, s2, s3 -> {} },
             onFailNext = {},
             onSkip = {},
-            onPrevious = {}
+            onPrevious = {},
+            onAddSet = {},
+            onInfoSelected = {}
         )
     }
 }
