@@ -87,6 +87,7 @@ fun DialogChangedRutine(
                         ),
                         textAlign = TextAlign.Center,
                         modifier = Modifier
+                            .fillMaxWidth()
                             .padding(vertical = 5.dp)
                     )
                 }
@@ -110,6 +111,7 @@ fun DialogChangedRutine(
                         ),
                         textAlign = TextAlign.Center,
                         modifier = Modifier
+                            .fillMaxWidth()
                             .padding(vertical = 5.dp)
                     )
                 }
@@ -146,8 +148,8 @@ fun DialogChangedRutine(
 fun PreviewDialogChangedRutine() {
     GimAppTheme {
         Spacer(modifier = Modifier.fillMaxSize())
-        InfoDialog(
-            exercise = Exercise("press banca", "con banca", R.drawable.press_banca)
+        DialogChangedRutine(
+            { }, { }, { }
         )
     }
 }

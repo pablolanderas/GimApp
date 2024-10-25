@@ -89,6 +89,10 @@ class AppViewModel : ViewModel() {
         return _uiState.value.actualTraining ?: throw Error("The rutine is null")
     }
 
+    fun getActualRutine(): Rutine? {
+        return _uiState.value.actualRutine
+    }
+
     fun getMenuMesage(): (@Composable (onClick: () -> Unit) -> Unit)? {
         return _uiState.value.menuMessage
     }
@@ -115,12 +119,18 @@ class AppViewModel : ViewModel() {
         return historialPressBanca
     }
 
+    // TODO
+
     fun getAllRutines() : List<Rutine> {
         return rutinasPrueba
     }
 
     fun getLastExerciseSet(e: Exercise): ExerciseSet? {
         return null
+    }
+
+    fun saveTraining(t: Training, r: Rutine?) {
+
     }
 
 }

@@ -21,6 +21,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.gimapp.AppViewModel
 import com.example.gimapp.domain.ExerciseRutine
 import com.example.gimapp.domain.ExerciseSet
+import com.example.gimapp.domain.Rutine
+import com.example.gimapp.domain.Training
 import com.example.gimapp.domain.TrainingExercise
 import com.example.gimapp.views.AddSet
 import com.example.gimapp.views.AddSetState
@@ -108,7 +110,7 @@ class GimAppController(
                 var state: AddSetState by remember { mutableStateOf(updateAddSetState(trainingExercise)) }
                 var timerString: String by remember { mutableStateOf("00:00") }
                 var time: Int by remember { mutableIntStateOf(0) }
-
+                // Timer
                 LaunchedEffect(Unit) {
                     var hours = 0
                     while (true) {
@@ -119,7 +121,7 @@ class GimAppController(
                             timerString = "${String.format("%02d", hours)}:${String.format("%02d", time-hours*60)}"
                     }
                 }
-
+                // Component
                 AddSet(
                     exerciseRutine = exerciseRutine,
                     trainingExercise = trainingExercise,
@@ -170,7 +172,7 @@ class GimAppController(
                 EndRoutine(
                     training = viewModel.getActualTraining(),
                     onExtraExercise = { navController.navigate(GimScreens.AddExerciseToTraining.name) },
-                    onEndTraining = { showDialogUpdateRutine = true }
+                    onEndTraining = { processEndTraining({ showDialogUpdateRutine = true }) }
                 )
                 if (showDialogUpdateRutine) {
                     DialogChangedRutine(
@@ -189,7 +191,10 @@ class GimAppController(
         if (last) {
             if (viewModel.getActualTraining().exercises.isEmpty()) {
                 viewModel.setMenuMessage { onClick ->
-                    MenuMessage(message = "El entrenamiento esta vacio\nNo se ha guardado", exit = onClick)
+                    MenuMessage(
+                        message = "El entrenamiento esta vacio\nNo se ha guardado",
+                        exit = onClick
+                    )
                 }
                 navController.navigate(GimScreens.Start.name)
             } else {
@@ -219,6 +224,35 @@ class GimAppController(
         if (trainingExercise.sets.size == 0) return AddSetState.First
         if (remaining == 1) return AddSetState.Last
         return AddSetState.Normal
+    }
+
+    private fun processEndTraining( showChanges: () -> Unit) {
+        val rutine: Rutine = viewModel.getActualRutine() ?: throw Error("The rutine is null")
+        val training: Training = viewModel.getActualTraining()
+        // Compare the rutine and the training
+        var equal: Boolean = true
+        for (exerciseRutine in rutine.exercises) {
+            // Buscamos el ejercicio en el entrenamiento que coincida con el de la rutina
+            val trainingExercise = training.exercises.find { it.exercise.name == exerciseRutine.exercise.name }
+
+            // Si el ejercicio no está en el entrenamiento o el número de series no coincide, devolvemos falso
+            if (trainingExercise == null || trainingExercise.sets.size != exerciseRutine.sets) {
+                equal = false
+                break
+            }
+        }
+        if (equal) {
+            viewModel.saveTraining(training, rutine)
+            viewModel.setMenuMessage { onClick ->
+                MenuMessage(
+                    message = "El entrenamiento se ha guardado correctamente",
+                    exit = onClick
+                )
+            }
+            navController.navigate(GimScreens.Start.name)
+        }
+        else
+            showChanges()
     }
 
     private fun showToast(message: String, context: Context, length: Int = Toast.LENGTH_SHORT) {
