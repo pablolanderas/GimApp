@@ -1,9 +1,12 @@
 package com.example.gimapp.views
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -43,15 +47,26 @@ import com.example.gimapp.ui.theme.GimAppTheme
 import com.example.gimapp.R
 import androidx.compose.material3.TextFieldDefaults.colors
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.example.gimapp.domain.ExerciseSet
 
 @Composable
 fun TitleRow(
-    exerciseRutine: ExerciseRutine
+    exerciseRutine: ExerciseRutine,
+    onPressInfo: () -> Unit,
+    onUnpressInfo: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -77,7 +92,63 @@ fun TitleRow(
             modifier = Modifier
                 .size(20.dp)
                 .align(Alignment.CenterVertically)
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onPress = {
+                            Log.d(
+                                "MainActivityDebuging",
+                                "Antes de soltar"
+                            ) // Acción antes de soltar
+                            onPressInfo()
+                            tryAwaitRelease() // Espera hasta que se suelte el toque
+                            Log.d(
+                                "MainActivityDebuging",
+                                "Después de soltar"
+                            ) // Acción después de soltar
+                            onUnpressInfo()
+                        }
+                    )
+                }
         )
+    }
+}
+
+@Composable
+fun InfoDialog(
+    exercise: Exercise
+) {
+    Dialog(onDismissRequest = { }) {
+        // El contenido del diálogo
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White, RoundedCornerShape(10.dp))
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = exercise.name.replaceFirstChar { it.uppercase() },
+                style = TextStyle(
+                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                    fontWeight = FontWeight.Bold
+                )
+            )
+            Text(
+                text = exercise.mode.replaceFirstChar { it.uppercase() },
+                style = TextStyle(
+                    fontSize = MaterialTheme.typography.bodyLarge.fontSize
+                ),
+                modifier = Modifier
+                    .padding(vertical = 15.dp)
+            )
+            Image(
+                painter = painterResource(id = exercise.imgURI ?: R.drawable.image),
+                contentDescription = "Information botton",
+                modifier = Modifier
+                    .size(200.dp)
+            )
+        }
     }
 }
 
@@ -89,6 +160,8 @@ fun WeightAndRepsSelecter(
     onValueChangeWeight: (String) -> Unit,
     onValueChangeReps: (String) -> Unit
 ) {
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -101,12 +174,17 @@ fun WeightAndRepsSelecter(
             text = "Peso",
             modifier = Modifier.weight(1f),
             value = weightValue,
+            onNext = {
+                focusRequester.requestFocus()
+                     },
             onValueChange = onValueChangeWeight
         )
         ColumOfTextSelecter(
             text = "Repeticiones",
             modifier = Modifier.weight(1f),
             value = repsValue,
+            focusRequester = focusRequester,
+            onNext = { focusManager.clearFocus() },
             onValueChange = onValueChangeReps
         )
     }
@@ -117,6 +195,8 @@ fun ColumOfTextSelecter(
     text : String,
     modifier: Modifier,
     value: String,
+    focusRequester: FocusRequester? = null,
+    onNext: () -> Unit,
     onValueChange: (String) -> Unit
 ) {
     Column(
@@ -152,11 +232,19 @@ fun ColumOfTextSelecter(
                 textAlign = TextAlign.Center
             ),
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number // Configurar el teclado para que sea numérico
+                keyboardType = KeyboardType.Number, // Configurar el teclado para que sea numérico
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = { onNext() }
             ),
             modifier = Modifier
                 .padding(vertical = 20.dp, horizontal = 30.dp)
                 .fillMaxWidth() // Asegúrate de que el OutlinedTextField ocupe el espacio necesario
+                .then(
+                    if (focusRequester != null) Modifier.focusRequester(focusRequester)
+                    else Modifier
+                )
         )
     }
 }
@@ -377,6 +465,7 @@ enum class AddSetState {
 fun AddSet(
     exerciseRutine: ExerciseRutine,
     trainingExercise: TrainingExercise,
+    remainingSets: Int,
     timerValue: String,
     state: AddSetState,
     onNext: (Double, Int, Context) -> Unit,
@@ -398,7 +487,16 @@ fun AddSet(
         verticalArrangement = Arrangement.SpaceEvenly,
     ) {
         Column {
-            TitleRow(exerciseRutine)
+            var showDialog by remember { mutableStateOf(false) }
+            if (showDialog)
+                InfoDialog(
+                    exercise = exerciseRutine.exercise
+                )
+            TitleRow(
+                exerciseRutine,
+                onPressInfo = { showDialog = true },
+                onUnpressInfo = { showDialog = false }
+            )
             Spacer(modifier = Modifier.weight(1f))
             WeightAndRepsSelecter(
                 modifier = Modifier.padding(horizontal = 20.dp),
@@ -420,6 +518,16 @@ fun AddSet(
                     timerValue = timerValue
                 )
             }
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 10.dp),
+                text = if (remainingSets > 1) "Quedan $remainingSets series" else "Útima serie",
+                style = TextStyle(
+                    color = Color.White,
+                ),
+                textAlign = TextAlign.Center
+            )
             Spacer(modifier = Modifier.weight(1f))
             Row(modifier = Modifier
                 .fillMaxWidth()
@@ -461,10 +569,15 @@ fun AddSet(
     }
 }
 
-@Preview(showSystemUi = true, )
+@Preview(showSystemUi = true)
 @Composable
 fun PrevieAddSet() {
     GimAppTheme {
+        if (false) {
+            InfoDialog(
+                exercise = Exercise("press banca", "con banca", R.drawable.press_banca)
+            )
+        }
         AddSet(
             exerciseRutine = ExerciseRutine(
                 exercise = Exercise("press banca", "con banca"),
@@ -477,6 +590,7 @@ fun PrevieAddSet() {
                 date = null,
                 sets = mutableListOf(ExerciseSet(40.0, 8, 0), ExerciseSet(40.0, 8, 0))
             ),
+            remainingSets = 2,
             timerValue = "00:30",
             state = AddSetState.Unique,
             onNext = { s1, s2, s3 -> {} },

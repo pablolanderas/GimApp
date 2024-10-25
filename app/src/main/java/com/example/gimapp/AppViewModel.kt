@@ -3,6 +3,7 @@ package com.example.gimapp
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import com.example.gimapp.data.AppUiState
 import com.example.gimapp.domain.Exercise
@@ -82,6 +83,30 @@ class AppViewModel : ViewModel() {
 
     fun getRemainingSets(): Int {
         return _uiState.value.remainingSets
+    }
+
+    fun getActualTraining(): Training {
+        return _uiState.value.actualTraining ?: throw Error("The rutine is null")
+    }
+
+    fun getMenuMesage(): (@Composable (onClick: () -> Unit) -> Unit)? {
+        return _uiState.value.menuMessage
+    }
+
+    fun resetMenuMessage() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                menuMessage = null,
+            )
+        }
+    }
+
+    fun setMenuMessage(function: (@Composable (onClick: () -> Unit) -> Unit)?) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                menuMessage = function,
+            )
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
