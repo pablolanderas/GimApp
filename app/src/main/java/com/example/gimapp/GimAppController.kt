@@ -2,7 +2,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.util.Log
-import android.view.Menu
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
@@ -14,7 +13,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
-import androidx.navigation.NavOptions
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -79,14 +77,21 @@ class GimAppController(
                 SelectRutine(
                     onRutineSelected = {
                         viewModel.setActualRutine(it)
-                        navController.navigate(GimScreens.NextExercise.name)
+                        if (it != null)
+                            navController.navigate(GimScreens.NextExercise.name)
+                        else
+                            navController.navigate(GimScreens.AddExerciseToTraining.name)
                     },
-
                     rutines = viewModel.getAllRutines()
+                                .map { it as Rutine? } // Convierte cada elemento a Rutine?
+                                .toMutableList() // Convierte la lista a mutable para añadirle el null
+                                .apply {
+                                    add(null) // Añade null al final
+                                }
                 )
             }
             composable(route = GimScreens.NextExercise.name) {
-                val exerciseRutine: ExerciseRutine = viewModel.getRutineExercise()
+                val exerciseRutine: ExerciseRutine = viewModel.getNextExercise()
                 NextExercise(
                     exerciseRutine = exerciseRutine,
                     historical = viewModel.getExerciseHistorical(exerciseRutine.exercise),
@@ -96,7 +101,7 @@ class GimAppController(
                 )
             }
             composable(route = GimScreens.OnSet.name) {
-                val exerciseRutine: ExerciseRutine = viewModel.getRutineExercise()
+                val exerciseRutine: ExerciseRutine = viewModel.getNextExercise()
                 var trainingExercise: TrainingExercise by remember {
                     mutableStateOf(
                         TrainingExercise(
@@ -106,7 +111,7 @@ class GimAppController(
                         )
                     )
                 }
-                var remainingSets: Int by remember { mutableStateOf(viewModel.getRemainingSets()) }
+                var remainingSets: Int by remember { mutableIntStateOf(viewModel.getRemainingSets()) }
                 var state: AddSetState by remember { mutableStateOf(updateAddSetState(trainingExercise)) }
                 var timerString: String by remember { mutableStateOf("00:00") }
                 var time: Int by remember { mutableIntStateOf(0) }
@@ -178,7 +183,7 @@ class GimAppController(
                     DialogChangedRutine(
                         onUpdate = { /*TODO*/ },
                         onCreate = { /*TODO*/ },
-                        onCancel = { showDialogUpdateRutine = false }
+                        onNoRegister = { /*TODO*/ }
                     )
                 }
             }
@@ -226,33 +231,36 @@ class GimAppController(
         return AddSetState.Normal
     }
 
-    private fun processEndTraining( showChanges: () -> Unit) {
-        val rutine: Rutine = viewModel.getActualRutine() ?: throw Error("The rutine is null")
+    private fun processEndTraining( showChanges: () -> Unit ) {
+        val rutine: Rutine? = viewModel.getActualRutine()
         val training: Training = viewModel.getActualTraining()
-        // Compare the rutine and the training
-        var equal: Boolean = true
-        for (exerciseRutine in rutine.exercises) {
-            // Buscamos el ejercicio en el entrenamiento que coincida con el de la rutina
-            val trainingExercise = training.exercises.find { it.exercise.name == exerciseRutine.exercise.name }
-
-            // Si el ejercicio no está en el entrenamiento o el número de series no coincide, devolvemos falso
-            if (trainingExercise == null || trainingExercise.sets.size != exerciseRutine.sets) {
-                equal = false
-                break
+        if (rutine == null) {
+            // Case no rutine
+        } else {
+            // Case in a rutine, compare the rutine and the training
+            var equal: Boolean = true
+            for (exerciseRutine in rutine.exercises) {
+                // Buscamos el ejercicio en el entrenamiento que coincida con el de la rutina
+                val trainingExercise =
+                    training.exercises.find { it.exercise.name == exerciseRutine.exercise.name }
+                // Si el ejercicio no está en el entrenamiento o el número de series no coincide, devolvemos falso
+                if (trainingExercise == null || trainingExercise.sets.size != exerciseRutine.sets) {
+                    equal = false
+                    break
+                }
             }
+            if (equal) {
+                viewModel.saveTraining(training, rutine)
+                viewModel.setMenuMessage { onClick ->
+                    MenuMessage(
+                        message = "El entrenamiento se ha guardado correctamente",
+                        exit = onClick
+                    )
+                }
+                navController.navigate(GimScreens.Start.name)
+            } else
+                showChanges()
         }
-        if (equal) {
-            viewModel.saveTraining(training, rutine)
-            viewModel.setMenuMessage { onClick ->
-                MenuMessage(
-                    message = "El entrenamiento se ha guardado correctamente",
-                    exit = onClick
-                )
-            }
-            navController.navigate(GimScreens.Start.name)
-        }
-        else
-            showChanges()
     }
 
     private fun showToast(message: String, context: Context, length: Int = Toast.LENGTH_SHORT) {

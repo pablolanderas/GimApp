@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -24,15 +23,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.example.gimapp.R
-import com.example.gimapp.domain.Exercise
 import com.example.gimapp.ui.theme.GimAppTheme
 
 @Composable
 fun DialogChangedRutine(
     onUpdate: () -> Unit,
     onCreate: () -> Unit,
-    onCancel: () -> Unit
+    onNoRegister: () -> Unit
 ) {
     Dialog(onDismissRequest = { }) {
         Column(
@@ -56,7 +53,7 @@ fun DialogChangedRutine(
                 textAlign = TextAlign.Center
             )
             Text(
-                text = "¿Quieres actualizar la rutina que tenias o crear una nueva?",
+                text = "¿Quieres guardar una modificación de la que tenias, crear una nueva o guarddar sin registrar una rutina?",
                 style = TextStyle(
                     color = Color.White,
                     fontSize = MaterialTheme.typography.bodyMedium.fontSize,
@@ -79,7 +76,7 @@ fun DialogChangedRutine(
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text(
-                        text = "Actualizar",
+                        text = "Modificar",
                         style = TextStyle(
                             color = Color.White,
                             fontSize = MaterialTheme.typography.bodyMedium.fontSize,
@@ -117,7 +114,7 @@ fun DialogChangedRutine(
                 }
             }
             Button(
-                onClick = onCancel,
+                onClick = onNoRegister,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 10.dp),
@@ -128,7 +125,7 @@ fun DialogChangedRutine(
                 shape = RoundedCornerShape(10.dp)
             ) {
                 Text(
-                    text = "Cancelar",
+                    text = "Guardar sin registrar",
                     style = TextStyle(
                         color = Color.White,
                         fontSize = MaterialTheme.typography.bodyMedium.fontSize,

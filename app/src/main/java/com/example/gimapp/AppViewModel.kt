@@ -26,13 +26,22 @@ class AppViewModel : ViewModel() {
     private var TAG: String = "MainActivityDebuging"
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun setActualRutine(r: Rutine) {
+    fun setActualRutine(r: Rutine?) {
         _uiState.update { currentState ->
             currentState.copy(
                 actualRutine = r,
                 actualRuniteExercise = 0,
-                remainingSets = r.exercises[0].sets,
+                remainingSets = r?.exercises?.get(0)?.sets ?: 0,
                 actualTraining = Training(LocalDate.now(), mutableListOf())
+            )
+        }
+    }
+
+    fun setNoRutineExerciseRutine(exerciseRutine: ExerciseRutine) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                noRutineExerciseRutine = exerciseRutine,
+                remainingSets = exerciseRutine.sets
             )
         }
     }
@@ -69,15 +78,22 @@ class AppViewModel : ViewModel() {
         }
     }
 
-    fun getRutineExercise() : ExerciseRutine {
-        val exercisePosition: Int = uiState.value.actualRuniteExercise
-        val rutine: Rutine = uiState.value.actualRutine ?: throw Error("The rutine is null")
-        return rutine.exercises[exercisePosition]
+    fun getNextExercise() : ExerciseRutine {
+        if (uiState.value.noRutineExerciseRutine != null) {
+            return uiState.value.noRutineExerciseRutine!!
+        } else if (uiState.value.actualRutine != null) {
+            val rutine: Rutine = uiState.value.actualRutine!!
+            val exercisePosition: Int = uiState.value.actualRuniteExercise
+            return rutine.exercises[exercisePosition]
+        } else {
+            throw Error("The rutine and the exercise temporal are not inicialiced")
+        }
     }
 
     fun isLastRutineExercie() : Boolean {
+        if (uiState.value.actualRutine == null) return true
         val exercisePosition: Int = uiState.value.actualRuniteExercise
-        val rutine: Rutine = uiState.value.actualRutine ?: throw Error("The rutine is null")
+        val rutine: Rutine = uiState.value.actualRutine!!
         return rutine.exercises.size == exercisePosition + 1
     }
 
@@ -86,7 +102,7 @@ class AppViewModel : ViewModel() {
     }
 
     fun getActualTraining(): Training {
-        return _uiState.value.actualTraining ?: throw Error("The rutine is null")
+        return _uiState.value.actualTraining ?: throw Error("The training is null")
     }
 
     fun getActualRutine(): Rutine? {

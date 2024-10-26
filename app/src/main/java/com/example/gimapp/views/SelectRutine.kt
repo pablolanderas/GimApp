@@ -45,9 +45,10 @@ import com.example.gimapp.ui.theme.GimAppTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DropListRutine(
-    options: List<Rutine>,
+    options: List<Rutine?>,
     selectedOption: Rutine?,
-    optionSelected: (Rutine) -> Unit
+    selected: Boolean,
+    optionSelected: (Rutine?) -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -73,7 +74,7 @@ fun DropListRutine(
             onExpandedChange = { expanded = !expanded }
         ) {
             TextField(
-                value = selectedOption?.name ?: "Seleccione una rutina",
+                value = selectedOption?.name ?: if (!selected) "Seleccione una rutina" else "Entrenamiento libre",
                 onValueChange = { },
                 readOnly = true,
                 textStyle = TextStyle(
@@ -113,7 +114,7 @@ fun DropListRutine(
             ) {
                 options.forEach { option ->
                     DropdownMenuItem(
-                        text = { Text(option.name) },
+                        text = { Text(option?.name ?: "Entrenamiento libre") },
                         onClick = {
                             optionSelected(option)
                             expanded = false
@@ -187,10 +188,11 @@ fun ListExercisesRutine(rutine: Rutine?) {
 
 @Composable
 fun SelectRutine(
-    onRutineSelected : (Rutine) -> Unit,
-    rutines: List<Rutine>
+    onRutineSelected : (Rutine?) -> Unit,
+    rutines: List<Rutine?>
 ) {
     var selectedOption: Rutine? by remember { mutableStateOf(null) }
+    var selected: Boolean by remember { mutableStateOf(false) }
     Header() {
         Box(modifier = Modifier
             .fillMaxSize()
@@ -201,9 +203,13 @@ fun SelectRutine(
                 verticalArrangement = Arrangement.SpaceEvenly
             ){
                 DropListRutine(
-                    rutines,
-                    selectedOption,
-                    { selectedOption = it }
+                    options = rutines,
+                    selectedOption = selectedOption,
+                    selected = selected,
+                    optionSelected = {
+                        selectedOption = it
+                        selected = true
+                    }
                 )
 
                 ListExercisesRutine(selectedOption)
@@ -219,7 +225,7 @@ fun SelectRutine(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.secondary
                     ),
-                    onClick = { selectedOption?.let { onRutineSelected(it) } }
+                    onClick = { if (selected) { onRutineSelected(selectedOption) } }
                 ){
                     Text(
                         text = "EMPEZAR",
