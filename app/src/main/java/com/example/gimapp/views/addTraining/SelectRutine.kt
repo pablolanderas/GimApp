@@ -1,4 +1,4 @@
-package com.example.gimapp.views
+package com.example.gimapp.views.addTraining
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.gimapp.components.Header
@@ -114,11 +115,17 @@ fun DropListRutine(
             ) {
                 options.forEach { option ->
                     DropdownMenuItem(
-                        text = { Text(option?.name ?: "Entrenamiento libre") },
+                        text = {
+                            Text(
+                                text = option?.name ?: "--- Entrenamiento libre ---",
+                                textAlign = if (option==null) TextAlign.Center else TextAlign.Start,  // Centra el texto dentro de la DropdownMenuItem
+                                modifier = Modifier.fillMaxWidth()  // Asegura que el texto ocupe todo el ancho disponible
+                            )
+                        },
                         onClick = {
                             optionSelected(option)
                             expanded = false
-                        }
+                        },
                     )
                 }
             }

@@ -1,11 +1,10 @@
-package com.example.gimapp.views
+package com.example.gimapp.views.addTraining
 
 import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,7 +53,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -486,86 +484,84 @@ fun AddSet(
     Header(
         verticalArrangement = Arrangement.SpaceEvenly,
     ) {
-        Column {
-            var showDialog by remember { mutableStateOf(false) }
-            if (showDialog)
-                InfoDialog(
-                    exercise = exerciseRutine.exercise
-                )
-            TitleRow(
-                exerciseRutine,
-                onPressInfo = { showDialog = true },
-                onUnpressInfo = { showDialog = false }
+        var showDialog by remember { mutableStateOf(false) }
+        if (showDialog)
+            InfoDialog(
+                exercise = exerciseRutine.exercise
             )
-            Spacer(modifier = Modifier.weight(1f))
-            WeightAndRepsSelecter(
-                modifier = Modifier.padding(horizontal = 20.dp),
-                weightValue = weightValue.value,
-                repsValue = repsValue.value,
-                onValueChangeWeight = { weightValue.value = it },
-                onValueChangeReps = { repsValue.value = it }
+        TitleRow(
+            exerciseRutine,
+            onPressInfo = { showDialog = true },
+            onUnpressInfo = { showDialog = false }
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        WeightAndRepsSelecter(
+            modifier = Modifier.padding(horizontal = 20.dp),
+            weightValue = weightValue.value,
+            repsValue = repsValue.value,
+            onValueChangeWeight = { weightValue.value = it },
+            onValueChangeReps = { repsValue.value = it }
+        )
+        Spacer(modifier = Modifier.weight(0.3f))
+        Row(
+            modifier = Modifier
+        ) {
+            ExerciseHistorical(
+                trainingExercise = trainingExercise,
+                modifier = Modifier.weight(1f)
             )
-            Spacer(modifier = Modifier.weight(0.3f))
-            Row(
-                modifier = Modifier
-            ) {
-                ExerciseHistorical(
-                    trainingExercise = trainingExercise,
-                    modifier = Modifier.weight(1f)
-                )
-                Timer(
-                    modifier = Modifier.weight(1f),
-                    timerValue = timerValue
-                )
-            }
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 10.dp),
-                text = if (remainingSets > 1) "Quedan $remainingSets series" else "Útima serie",
-                style = TextStyle(
-                    color = Color.White,
-                ),
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Row(modifier = Modifier
-                .fillMaxWidth()
-            ) {
-                Spacer(modifier = Modifier.weight(1f))
-                Button(
-                    onClick = {
-                        val weight: Double? = weightValue.value.toDoubleOrNull()
-                        val reps: Int? = repsValue.value.toIntOrNull()
-                        if (weight != null && reps != null)
-                            onNext(weight, reps, context)
-                        else
-                            onFailNext(context)
-                    },
-                    modifier = Modifier
-                        .background(
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = RoundedCornerShape(15.dp)
-                        )
-                ) {
-                    Text(
-                        text = if (state != AddSetState.Last) "SIGUIENTE" else "ACABAR",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1f))
-            }
-            NavigateButtons(
-                modifier = Modifier.padding(horizontal = 20.dp),
-                state = state,
-                onSkip = { onSkip(context) },
-                onPrevious = { onPrevious(context) },
-                onAddSet = { onAddSet() }
+            Timer(
+                modifier = Modifier.weight(1f),
+                timerValue = timerValue
             )
         }
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 10.dp),
+            text = if (remainingSets > 1) "Quedan $remainingSets series" else "Útima serie",
+            style = TextStyle(
+                color = Color.White,
+            ),
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        Row(modifier = Modifier
+            .fillMaxWidth()
+        ) {
+            Spacer(modifier = Modifier.weight(1f))
+            Button(
+                onClick = {
+                    val weight: Double? = weightValue.value.toDoubleOrNull()
+                    val reps: Int? = repsValue.value.toIntOrNull()
+                    if (weight != null && reps != null)
+                        onNext(weight, reps, context)
+                    else
+                        onFailNext(context)
+                },
+                modifier = Modifier
+                    .background(
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(15.dp)
+                    )
+            ) {
+                Text(
+                    text = if (state != AddSetState.Last) "SIGUIENTE" else "ACABAR",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
+            Spacer(modifier = Modifier.weight(1f))
+        }
+        NavigateButtons(
+            modifier = Modifier.padding(horizontal = 20.dp),
+            state = state,
+            onSkip = { onSkip(context) },
+            onPrevious = { onPrevious(context) },
+            onAddSet = { onAddSet() }
+        )
     }
 }
 

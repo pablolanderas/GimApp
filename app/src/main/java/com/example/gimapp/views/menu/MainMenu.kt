@@ -1,4 +1,4 @@
-package com.example.gimapp.views
+package com.example.gimapp.views.menu
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

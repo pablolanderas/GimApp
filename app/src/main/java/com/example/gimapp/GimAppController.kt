@@ -22,14 +22,15 @@ import com.example.gimapp.domain.ExerciseSet
 import com.example.gimapp.domain.Rutine
 import com.example.gimapp.domain.Training
 import com.example.gimapp.domain.TrainingExercise
-import com.example.gimapp.views.AddSet
-import com.example.gimapp.views.AddSetState
-import com.example.gimapp.views.DialogChangedRutine
-import com.example.gimapp.views.EndRoutine
-import com.example.gimapp.views.NextExercise
-import com.example.gimapp.views.MainMenu
-import com.example.gimapp.views.MenuMessage
-import com.example.gimapp.views.SelectRutine
+import com.example.gimapp.views.addTraining.AddSet
+import com.example.gimapp.views.addTraining.AddSetState
+import com.example.gimapp.views.addTraining.DialogChangedRutine
+import com.example.gimapp.views.addTraining.DialogNameTraining
+import com.example.gimapp.views.addTraining.EndRoutine
+import com.example.gimapp.views.addTraining.NextExercise
+import com.example.gimapp.views.menu.MainMenu
+import com.example.gimapp.views.menu.MenuMessage
+import com.example.gimapp.views.addTraining.SelectRutine
 import kotlinx.coroutines.delay
 
 enum class GimScreens() {
@@ -174,16 +175,34 @@ class GimAppController(
             }
             composable(route = GimScreens.EndRoutine.name) {
                 var showDialogUpdateRutine by remember { mutableStateOf(false) }
+                var showDialogEndNoRutine by remember { mutableStateOf(false) }
                 EndRoutine(
                     training = viewModel.getActualTraining(),
                     onExtraExercise = { navController.navigate(GimScreens.AddExerciseToTraining.name) },
-                    onEndTraining = { processEndTraining({ showDialogUpdateRutine = true }) }
+                    onEndTraining = {
+                        processEndTraining(
+                            showChanges =  { showDialogUpdateRutine = true },
+                            showNoRutine = { showDialogEndNoRutine = true }
+                        )
+                    }
                 )
                 if (showDialogUpdateRutine) {
                     DialogChangedRutine(
                         onUpdate = { /*TODO*/ },
                         onCreate = { /*TODO*/ },
                         onNoRegister = { /*TODO*/ }
+                    )
+                }
+                if (showDialogEndNoRutine) {
+                    DialogNameTraining(
+                        onSaveRutine = { Log.d("MainActivityDebuging", "Pulsado rutina con: $it") },
+                        onSaveTraining = {
+                            Log.d(
+                                "MainActivityDebuging",
+                                "Pulsado entrenamiento con: $it"
+                            )
+                        }
+
                     )
                 }
             }
@@ -231,11 +250,11 @@ class GimAppController(
         return AddSetState.Normal
     }
 
-    private fun processEndTraining( showChanges: () -> Unit ) {
+    private fun processEndTraining( showChanges: () -> Unit, showNoRutine: () -> Unit ) {
         val rutine: Rutine? = viewModel.getActualRutine()
         val training: Training = viewModel.getActualTraining()
         if (rutine == null) {
-            // Case no rutine
+            showNoRutine()
         } else {
             // Case in a rutine, compare the rutine and the training
             var equal: Boolean = true

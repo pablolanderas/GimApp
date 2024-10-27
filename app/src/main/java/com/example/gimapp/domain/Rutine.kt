@@ -5,9 +5,21 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import java.time.LocalDate
 
+enum class MuscularGroup() {
+    Chest,
+    Shoulder,
+    Back,
+    Trapeze,
+    Biceps,
+    Triceps,
+    Leg,
+    Twin
+}
+
 class Exercise(
     val name: String,
     val mode: String,
+    val muscle: MuscularGroup = MuscularGroup.Chest,
     val imgURI: Int? = null
 ) {
 }
@@ -46,7 +58,7 @@ val rutinasPrueba = mutableListOf(
         name = "Pull",
         exercises = mutableListOf(
             ExerciseRutine(
-                exercise = Exercise("press banca", "con banca", R.drawable.press_banca),
+                exercise = Exercise("press banca", "con banca", imgURI = R.drawable.press_banca),
                 sets = 1,
                 minReps = 8,
                 maxReps = 10
@@ -140,7 +152,7 @@ val rutinasPrueba = mutableListOf(
 @RequiresApi(Build.VERSION_CODES.O)
 val historialPressBanca: List<TrainingExercise> = listOf(
     TrainingExercise(
-        exercise = Exercise("press banca", "normal", R.drawable.press_banca),
+        exercise = Exercise("press banca", "normal", imgURI =  R.drawable.press_banca),
         date = LocalDate.of(2024, 8, 13),
         sets = mutableListOf(
             ExerciseSet(weight = 70.0, reps = 10, effort = 2),
@@ -150,7 +162,7 @@ val historialPressBanca: List<TrainingExercise> = listOf(
         )
     ),
     TrainingExercise(
-        exercise = Exercise("press banca", "normal", R.drawable.press_banca),
+        exercise = Exercise("press banca", "normal", imgURI = R.drawable.press_banca),
         date = LocalDate.of(2024, 8, 10),
         sets = mutableListOf(
             ExerciseSet(weight = 68.0, reps = 14, effort = 2),
