@@ -1,14 +1,22 @@
 package com.example.gimapp.views.addTraining
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -25,24 +33,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.gimapp.components.Header
-import com.example.gimapp.domain.Rutine
+import com.example.gimapp.domain.Exercise
+import com.example.gimapp.domain.MuscularGroup
+import com.example.gimapp.domain.ejerciciosPrueba
 import com.example.gimapp.ui.theme.GimAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DropListMuscularGroup(
-    options: List<Rutine?>,
-    selectedOption: Rutine?,
-    selected: Boolean,
-    optionSelected: (Rutine?) -> Unit
+    modifier: Modifier,
+    selectedOption: MuscularGroup?,
+    optionSelected: (MuscularGroup) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(
-        modifier = Modifier
+        modifier = modifier
             .background(
                 color = Color(0x00000000),
                 shape = RoundedCornerShape(16.dp)
@@ -51,7 +62,7 @@ fun DropListMuscularGroup(
         onExpandedChange = { expanded = !expanded }
     ) {
         TextField(
-            value = selectedOption?.name ?: if (!selected) "Seleccione una rutina" else "Entrenamiento libre",
+            value = selectedOption?.getText() ?: "Seleccion un grupo muscular",
             onValueChange = { },
             readOnly = true,
             textStyle = TextStyle(
@@ -89,12 +100,11 @@ fun DropListMuscularGroup(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            options.forEach { option ->
+            MuscularGroup.values().forEach { option ->
                 DropdownMenuItem(
                     text = {
                         androidx.compose.material3.Text(
-                            text = option?.name ?: "--- Entrenamiento libre ---",
-                            textAlign = if (option==null) TextAlign.Center else TextAlign.Start,  // Centra el texto dentro de la DropdownMenuItem
+                            text = option.getText(),  // Centra el texto dentro de la DropdownMenuItem
                             modifier = Modifier.fillMaxWidth()  // Asegura que el texto ocupe todo el ancho disponible
                         )
                     },
@@ -109,10 +119,83 @@ fun DropListMuscularGroup(
 }
 
 @Composable
-fun AddExerciseToTraining() {
-    Header(
-        verticalArrangement = Arrangement.SpaceEvenly,
+fun ExerciseSelector(
+    modifier: Modifier = Modifier,
+    selection: Exercise?,
+    options: List<Exercise>,
+    selected: (Exercise) -> Unit,
+    onAddExercise: () -> Unit
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                MaterialTheme.colorScheme.primary,
+                shape = RoundedCornerShape(15.dp)
+            )
+            .padding(10.dp)
     ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 60.dp) // Espacio inferior para evitar que el LazyColumn tape el botón
+        ) {
+            var InteralPadding = 0.dp
+            items(options) { exercise ->
+                val isSelected = exercise == selection
+                Button(
+                    onClick = { selected(exercise) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (!isSelected) MaterialTheme.colorScheme.secondary else Color.Gray
+                    ),
+                    shape = RoundedCornerShape(5.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 5.dp)
+                ) {
+                    Text(
+                        text = exercise.name.replaceFirstChar { it.uppercase() },
+                        style = TextStyle(
+                            fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                            color = Color.White
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 5.dp)
+                    )
+                }
+            }
+        }
+
+        // Botón flotante en la esquina inferior derecha
+        Button(
+            onClick = onAddExercise,
+            shape = RoundedCornerShape(50), // Hace el botón redondo
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
+            modifier = Modifier
+                .align(Alignment.BottomEnd) // Posiciona el botón en la esquina inferior derecha // Margen desde el borde
+        ) {
+            Text(
+                text = "+",
+                color = Color.White,
+                style = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            )
+        }
+    }
+}
+
+@Composable
+fun AddExerciseToTraining(
+    onContinue: (Exercise) -> Unit,
+    getExercises: (MuscularGroup) -> List<Exercise>,
+    onAddExercise: () -> Unit
+) {
+    Header(
+        verticalArrangement = Arrangement.SpaceEvenly
+    ) {
+        var musucarGroup: MuscularGroup? by remember { mutableStateOf(null) }
+        var exercise: Exercise? by remember { mutableStateOf(null) }
+        var exerciseList = musucarGroup?.let { getExercises(it) } ?: emptyList()
         Text(
             text = "Selecciona el ejercicio",
             color = Color.White,
@@ -122,14 +205,55 @@ fun AddExerciseToTraining() {
             ),
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(top = 40.dp)
         )
+        DropListMuscularGroup(
+            modifier = Modifier
+                .padding(
+                    horizontal = 30.dp,
+                    vertical = 30.dp
+                ),
+            selectedOption = musucarGroup,
+            optionSelected = { musucarGroup = it },
+        )
+        ExerciseSelector(
+            modifier = Modifier
+                .padding(
+                    horizontal = 30.dp
+                )
+                .weight(1f),
+            selection = exercise,
+            options = exerciseList,
+            selected = { exercise = it },
+            onAddExercise = onAddExercise
+        )
+        Button(
+            onClick = { exercise?.let { onContinue(it) } },
+            shape = RoundedCornerShape(20), // Hace el botón redondo
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+            modifier = Modifier
+                .padding(top = 20.dp)
+                .align(Alignment.CenterHorizontally)
+        ) {
+            Text(
+                text = "Continuar",
+                color = Color.White,
+                style = MaterialTheme.typography.titleMedium
+            )
+        }
+        Spacer(modifier = Modifier.height(30.dp))
     }
 }
+
 
 @Preview(showSystemUi = true)
 @Composable
 fun PreviewAddExerciseToTraining() {
     GimAppTheme {
-        AddExerciseToTraining()
+        AddExerciseToTraining(
+            onContinue = {},
+            getExercises = {ejerciciosPrueba},
+            onAddExercise = {}
+        )
     }
 }

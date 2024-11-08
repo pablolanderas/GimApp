@@ -179,7 +179,7 @@ fun PrevieEndRoutine() {
             Training(LocalDate.now(),
                 mutableListOf(
                     TrainingExercise(
-                        exercise = Exercise("press banca", "normal", R.drawable.press_banca),
+                        exercise = Exercise("press banca", "normal", imgURI = R.drawable.press_banca),
                         date = LocalDate.of(2024, 8, 13),
                         sets = mutableListOf(
                             ExerciseSet(weight = 70.0, reps = 10, effort = 2),
@@ -189,7 +189,7 @@ fun PrevieEndRoutine() {
                         )
                     ),
                     TrainingExercise(
-                        exercise = Exercise("press inclinado", "normal", R.drawable.press_banca),
+                        exercise = Exercise("press inclinado", "normal", imgURI = R.drawable.press_banca),
                         date = LocalDate.of(2024, 8, 13),
                         sets = mutableListOf(
                             ExerciseSet(weight = 70.0, reps = 10, effort = 2),

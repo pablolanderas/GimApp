@@ -22,6 +22,7 @@ import com.example.gimapp.domain.ExerciseSet
 import com.example.gimapp.domain.Rutine
 import com.example.gimapp.domain.Training
 import com.example.gimapp.domain.TrainingExercise
+import com.example.gimapp.views.addTraining.AddExerciseToTraining
 import com.example.gimapp.views.addTraining.AddSet
 import com.example.gimapp.views.addTraining.AddSetState
 import com.example.gimapp.views.addTraining.DialogChangedRutine
@@ -171,7 +172,11 @@ class GimAppController(
                 )
             }
             composable(route = GimScreens.AddExerciseToTraining.name) {
-
+                AddExerciseToTraining(
+                    onContinue = {},
+                    getExercises = { emptyList() },
+                    onAddExercise = {}
+                )
             }
             composable(route = GimScreens.EndRoutine.name) {
                 var showDialogUpdateRutine by remember { mutableStateOf(false) }

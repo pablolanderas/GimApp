@@ -1,0 +1,66 @@
+@startuml
+
+' Enum class MuscularGroup with display name property
+enum MuscularGroup {
+    Chest
+    Shoulder
+    Back
+    Trapeze
+    Biceps
+    Triceps
+    Leg
+    Twin
+    + displayName : String
+    + getText() : String
+}
+
+' Class Exercise with properties and association to MuscularGroup
+class Exercise {
+    + name : String
+    + mode : String
+    + muscle : MuscularGroup
+    + imgURI : Int?
+}
+
+' Class ExerciseRutine with association to Exercise
+class ExerciseRutine {
+    + exercise : Exercise
+    + sets : Int
+    + minReps : Int
+    + maxReps : Int
+}
+
+' Class Rutine with association to ExerciseRutine
+class Rutine {
+    + name : String
+    + exercises : MutableList<ExerciseRutine>
+}
+
+' Class ExerciseSet with weight, reps, and effort properties
+class ExerciseSet {
+    + weight : Double
+    + reps : Int
+    + effort : Int
+}
+
+' Class TrainingExercise with association to Exercise and ExerciseSet
+class TrainingExercise {
+    + exercise : Exercise
+    + date : LocalDate?
+    + sets : MutableList<ExerciseSet>
+}
+
+' Class Training with association to TrainingExercise
+class Training {
+    + date : LocalDate
+    + exercises : MutableList<TrainingExercise>
+}
+
+' Associations between classes
+ExerciseRutine --> Exercise : exercise
+Rutine --> ExerciseRutine : exercises
+TrainingExercise --> Exercise : exercise
+TrainingExercise --> ExerciseSet : sets
+Training --> TrainingExercise : exercises
+
+@enduml

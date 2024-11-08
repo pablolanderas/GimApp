@@ -3,17 +3,23 @@ package com.example.gimapp.domain
 import com.example.gimapp.R
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.annotation.StringRes
 import java.time.LocalDate
 
-enum class MuscularGroup() {
-    Chest,
-    Shoulder,
-    Back,
-    Trapeze,
-    Biceps,
-    Triceps,
-    Leg,
-    Twin
+enum class MuscularGroup(
+    val displayName: String
+) {
+    Chest("Pecho"),
+    Shoulder("Hombro"),
+    Back("Espalda"),
+    Trapeze("Trapecio"),
+    Biceps("Biceps"),
+    Triceps("Triceps"),
+    Leg("Pierna"),
+    Twin("Gemelo");
+
+    fun getText(): String { return displayName }
+
 }
 
 class Exercise(
@@ -171,4 +177,27 @@ val historialPressBanca: List<TrainingExercise> = listOf(
             ExerciseSet(weight = 70.0, reps = 10, effort = 2)
         )
     )
+)
+
+val ejerciciosPrueba: List<Exercise> = listOf(
+    Exercise("press banca", "normal"),
+    Exercise("sentadilla", "con barra"),
+    Exercise("peso muerto", "convencional"),
+    Exercise("press militar", "con barra"),
+    Exercise("dominadas", "con peso"),
+    Exercise("remo con barra", "horizontal"),
+    Exercise("curl de bíceps", "con barra"),
+    Exercise("extensiones de tríceps", "con polea"),
+    Exercise("press inclinado", "con mancuernas"),
+    Exercise("zancadas", "con barra"),
+    Exercise("elevaciones laterales", "con mancuernas"),
+    Exercise("abdominales", "en banco declinado"),
+    Exercise("jalón al pecho", "en polea"),
+    Exercise("remo en polea baja", "horizontal"),
+    Exercise("hip thrust", "con barra"),
+    Exercise("press de pecho", "en máquina"),
+    Exercise("press de pierna", "en máquina"),
+    Exercise("peso muerto rumano", "con barra"),
+    Exercise("crunch abdominal", "con peso"),
+    Exercise("press Arnold", "con mancuernas")
 )

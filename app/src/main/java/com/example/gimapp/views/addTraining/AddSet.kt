@@ -571,7 +571,7 @@ fun PrevieAddSet() {
     GimAppTheme {
         if (false) {
             InfoDialog(
-                exercise = Exercise("press banca", "con banca", R.drawable.press_banca)
+                exercise = Exercise("press banca", "con banca", imgURI = R.drawable.press_banca)
             )
         }
         AddSet(
