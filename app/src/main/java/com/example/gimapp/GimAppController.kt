@@ -17,6 +17,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.gimapp.AppViewModel
+import com.example.gimapp.domain.DatabBasev1
 import com.example.gimapp.domain.ExerciseRutine
 import com.example.gimapp.domain.ExerciseSet
 import com.example.gimapp.domain.Rutine
@@ -44,7 +45,7 @@ enum class GimScreens() {
 }
 
 class GimAppController(
-    private val viewModel: AppViewModel = AppViewModel(),
+    private val viewModel: AppViewModel = AppViewModel(DatabBasev1()),
 ) {
 
     private lateinit var navController: NavHostController
@@ -173,9 +174,11 @@ class GimAppController(
             }
             composable(route = GimScreens.AddExerciseToTraining.name) {
                 AddExerciseToTraining(
-                    onContinue = {},
-                    getExercises = { emptyList() },
-                    onAddExercise = {}
+                    onContinue = {
+                        TODO("Hay que lanzar un Dialog para rellenar cuantas series se quieren hacer, min y max de repes")
+                    },
+                    getExercises = { viewModel.getMuscleExercises(it) },
+                    onAddExercise = { /*TODO*/ }
                 )
             }
             composable(route = GimScreens.EndRoutine.name) {
@@ -274,7 +277,7 @@ class GimAppController(
                 }
             }
             if (equal) {
-                viewModel.saveTraining(training, rutine)
+                viewModel.saveTraining(training)
                 viewModel.setMenuMessage { onClick ->
                     MenuMessage(
                         message = "El entrenamiento se ha guardado correctamente",

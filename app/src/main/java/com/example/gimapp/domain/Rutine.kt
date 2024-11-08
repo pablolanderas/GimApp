@@ -16,7 +16,8 @@ enum class MuscularGroup(
     Biceps("Biceps"),
     Triceps("Triceps"),
     Leg("Pierna"),
-    Twin("Gemelo");
+    Twin("Gemelo"),
+    Abs("Abdominales");
 
     fun getText(): String { return displayName }
 
@@ -27,8 +28,7 @@ class Exercise(
     val mode: String,
     val muscle: MuscularGroup = MuscularGroup.Chest,
     val imgURI: Int? = null
-) {
-}
+)
 
 class ExerciseRutine(
     val exercise: Exercise,
@@ -56,7 +56,9 @@ class TrainingExercise(
 
 class Training(
     val date: LocalDate,
-    val exercises: MutableList<TrainingExercise>
+    val exercises: MutableList<TrainingExercise>,
+    val rutine: Rutine?,
+    val modifiedRutine: Boolean
 )
 
 val rutinasPrueba = mutableListOf(
@@ -180,24 +182,47 @@ val historialPressBanca: List<TrainingExercise> = listOf(
 )
 
 val ejerciciosPrueba: List<Exercise> = listOf(
-    Exercise("press banca", "normal"),
-    Exercise("sentadilla", "con barra"),
-    Exercise("peso muerto", "convencional"),
-    Exercise("press militar", "con barra"),
-    Exercise("dominadas", "con peso"),
-    Exercise("remo con barra", "horizontal"),
-    Exercise("curl de bíceps", "con barra"),
-    Exercise("extensiones de tríceps", "con polea"),
-    Exercise("press inclinado", "con mancuernas"),
-    Exercise("zancadas", "con barra"),
-    Exercise("elevaciones laterales", "con mancuernas"),
-    Exercise("abdominales", "en banco declinado"),
-    Exercise("jalón al pecho", "en polea"),
-    Exercise("remo en polea baja", "horizontal"),
-    Exercise("hip thrust", "con barra"),
-    Exercise("press de pecho", "en máquina"),
-    Exercise("press de pierna", "en máquina"),
-    Exercise("peso muerto rumano", "con barra"),
-    Exercise("crunch abdominal", "con peso"),
-    Exercise("press Arnold", "con mancuernas")
+    Exercise("press banca", "normal", MuscularGroup.Chest),
+    Exercise("sentadilla", "con barra", MuscularGroup.Leg),
+    Exercise("peso muerto", "convencional", MuscularGroup.Leg),
+    Exercise("press militar", "con barra", MuscularGroup.Shoulder),
+    Exercise("dominadas", "con peso", MuscularGroup.Back),
+    Exercise("remo con barra", "horizontal", MuscularGroup.Back),
+    Exercise("curl de bíceps", "con barra", MuscularGroup.Biceps),
+    Exercise("extensiones de tríceps", "con polea", MuscularGroup.Triceps),
+    Exercise("press inclinado", "con mancuernas", MuscularGroup.Chest),
+    Exercise("zancadas", "con barra", MuscularGroup.Leg),
+    Exercise("elevaciones laterales", "con mancuernas", MuscularGroup.Shoulder),
+    Exercise("abdominales", "en banco declinado", MuscularGroup.Chest),  // Se puede ajustar según lo que busques.
+    Exercise("jalón al pecho", "en polea", MuscularGroup.Back),
+    Exercise("remo en polea baja", "horizontal", MuscularGroup.Back),
+    Exercise("hip thrust", "con barra", MuscularGroup.Leg),
+    Exercise("press de pecho", "en máquina", MuscularGroup.Chest),
+    Exercise("press de pierna", "en máquina", MuscularGroup.Leg),
+    Exercise("peso muerto rumano", "con barra", MuscularGroup.Leg),
+    Exercise("crunch abdominal", "con peso", MuscularGroup.Chest),  // Similar a abdominales, podría ser abdominal.
+    Exercise("press Arnold", "con mancuernas", MuscularGroup.Shoulder),
+    Exercise("press de pecho en banco plano", "con barra", MuscularGroup.Chest),
+    Exercise("leg press", "en máquina", MuscularGroup.Leg),
+    Exercise("remo con mancuernas", "inclinado", MuscularGroup.Back),
+    Exercise("fondos en paralelas", "con peso", MuscularGroup.Triceps),
+    Exercise("peso muerto sumo", "con barra", MuscularGroup.Leg),
+    Exercise("press militar con mancuernas", "alterno", MuscularGroup.Shoulder),
+    Exercise("dominadas con agarre amplio", "sin peso", MuscularGroup.Back),
+    Exercise("curl martillo", "con mancuernas", MuscularGroup.Biceps),
+    Exercise("extensiones de piernas", "en máquina", MuscularGroup.Leg),
+    Exercise("pull-over", "con mancuerna", MuscularGroup.Chest),
+    Exercise("remo en máquina", "sentado", MuscularGroup.Back),
+    Exercise("flexiones de brazo", "en suelo", MuscularGroup.Chest),
+    Exercise("zancadas caminando", "con mancuernas", MuscularGroup.Leg),
+    Exercise("crunch inverso", "en banco plano", MuscularGroup.Abs),  // Aquí cambiamos el grupo muscular a Abs.
+    Exercise("elevaciones frontales", "con mancuernas", MuscularGroup.Shoulder),
+    Exercise("jalón con agarre estrecho", "en polea", MuscularGroup.Back),
+    Exercise("sentadilla búlgara", "con mancuernas", MuscularGroup.Leg),
+    Exercise("curl de piernas", "en máquina", MuscularGroup.Leg),
+    Exercise("elevación de talones", "en máquina", MuscularGroup.Twin),  // Gemelos.
+    Exercise("press de hombro", "en máquina", MuscularGroup.Shoulder),
+    Exercise("push press", "con barra", MuscularGroup.Shoulder)
 )
+
+

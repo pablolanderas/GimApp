@@ -9,6 +9,8 @@ import com.example.gimapp.data.AppUiState
 import com.example.gimapp.domain.Exercise
 import com.example.gimapp.domain.ExerciseRutine
 import com.example.gimapp.domain.ExerciseSet
+import com.example.gimapp.domain.IDataBase
+import com.example.gimapp.domain.MuscularGroup
 import com.example.gimapp.domain.Rutine
 import com.example.gimapp.domain.Training
 import com.example.gimapp.domain.TrainingExercise
@@ -19,7 +21,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import java.time.LocalDate
 
-class AppViewModel : ViewModel() {
+class AppViewModel(
+    private var db: IDataBase
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AppUiState())
     val uiState: StateFlow<AppUiState> = _uiState
@@ -32,7 +36,7 @@ class AppViewModel : ViewModel() {
                 actualRutine = r,
                 actualRuniteExercise = 0,
                 remainingSets = r?.exercises?.get(0)?.sets ?: 0,
-                actualTraining = Training(LocalDate.now(), mutableListOf())
+                actualTraining = Training(LocalDate.now(), mutableListOf(), r, false)
             )
         }
     }
@@ -66,6 +70,11 @@ class AppViewModel : ViewModel() {
     fun setNextRutineExercise(t: TrainingExercise?) {
         if (t != null && t.sets.isNotEmpty())
             _uiState.value.actualTraining?.exercises?.add(t) ?: throw Error("The Training is not inicialiced")
+        _uiState.update { currentState ->
+            currentState.copy(
+                noRutineExerciseRutine = null
+            )
+        }
         Log.d(TAG, "Actual Training: ${_uiState.value.actualTraining?.exercises?.joinToString(", ") { "${it.exercise.name} x${it.sets.size}" } ?: "Empty"}")
     }
 
@@ -131,22 +140,27 @@ class AppViewModel : ViewModel() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun getExerciseHistorical(e : Exercise) : List<TrainingExercise> {
-        Log.d(TAG, "Called the history of ${e.name}")
-        return historialPressBanca
+        return db.getExerciseTrainings(e)
     }
-
-    // TODO
 
     fun getAllRutines() : List<Rutine> {
-        return rutinasPrueba
+        return db.getAllRutines()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun getLastExerciseSet(e: Exercise): ExerciseSet? {
-        return null
+        var trainings: List<TrainingExercise> = db.getExerciseTrainings(e)
+        var last = trainings.maxByOrNull { it.date ?: LocalDate.MIN }
+        return last?.sets?.get(0)
+        /// return null
     }
 
-    fun saveTraining(t: Training, r: Rutine?) {
+    fun saveTraining(t: Training) {
+        db.saveTraining(t)
+    }
 
+    fun getMuscleExercises(m: MuscularGroup): List<Exercise> {
+        return db.getExercisesByMuscle(m)
     }
 
 }

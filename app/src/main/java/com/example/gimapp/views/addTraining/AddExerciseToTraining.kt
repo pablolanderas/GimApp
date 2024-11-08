@@ -123,10 +123,11 @@ fun ExerciseSelector(
     modifier: Modifier = Modifier,
     selection: Exercise?,
     options: List<Exercise>,
+    showAddExercise: Boolean,
     selected: (Exercise) -> Unit,
     onAddExercise: () -> Unit
 ) {
-    Box(
+    LazyColumn(
         modifier = modifier
             .fillMaxWidth()
             .background(
@@ -135,51 +136,47 @@ fun ExerciseSelector(
             )
             .padding(10.dp)
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 60.dp) // Espacio inferior para evitar que el LazyColumn tape el botón
-        ) {
-            var InteralPadding = 0.dp
-            items(options) { exercise ->
-                val isSelected = exercise == selection
-                Button(
-                    onClick = { selected(exercise) },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (!isSelected) MaterialTheme.colorScheme.secondary else Color.Gray
+        var InteralPadding = 0.dp
+        items(options) { exercise ->
+            val isSelected = exercise == selection
+            Button(
+                onClick = { selected(exercise) },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (!isSelected) MaterialTheme.colorScheme.secondary else Color.Gray
+                ),
+                shape = RoundedCornerShape(5.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 5.dp)
+            ) {
+                Text(
+                    text = exercise.name.replaceFirstChar { it.uppercase() },
+                    style = TextStyle(
+                        fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                        color = Color.White
                     ),
-                    shape = RoundedCornerShape(5.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 5.dp)
+                )
+            }
+        }
+        if (showAddExercise) {
+            item {
+                Button(
+                    onClick = onAddExercise,
+                    shape = RoundedCornerShape(50),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
+                    modifier = Modifier
+                        .fillMaxWidth()
                 ) {
                     Text(
-                        text = exercise.name.replaceFirstChar { it.uppercase() },
-                        style = TextStyle(
-                            fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                            color = Color.White
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 5.dp)
+                        text = "+",
+                        color = Color.White,
+                        style = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Bold)
                     )
                 }
             }
-        }
-
-        // Botón flotante en la esquina inferior derecha
-        Button(
-            onClick = onAddExercise,
-            shape = RoundedCornerShape(50), // Hace el botón redondo
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
-            modifier = Modifier
-                .align(Alignment.BottomEnd) // Posiciona el botón en la esquina inferior derecha // Margen desde el borde
-        ) {
-            Text(
-                text = "+",
-                color = Color.White,
-                style = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Bold)
-            )
         }
     }
 }
@@ -214,7 +211,10 @@ fun AddExerciseToTraining(
                     vertical = 30.dp
                 ),
             selectedOption = musucarGroup,
-            optionSelected = { musucarGroup = it },
+            optionSelected = {
+                musucarGroup = it
+                exercise = null
+            },
         )
         ExerciseSelector(
             modifier = Modifier
@@ -224,6 +224,7 @@ fun AddExerciseToTraining(
                 .weight(1f),
             selection = exercise,
             options = exerciseList,
+            showAddExercise = musucarGroup != null,
             selected = { exercise = it },
             onAddExercise = onAddExercise
         )

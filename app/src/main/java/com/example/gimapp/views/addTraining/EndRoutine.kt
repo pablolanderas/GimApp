@@ -186,7 +186,7 @@ fun PrevieEndRoutine() {
                             ExerciseSet(weight = 70.0, reps = 10, effort = 2),
                             ExerciseSet(weight = 70.0, reps = 10, effort = 2),
                             ExerciseSet(weight = 70.0, reps = 10, effort = 2)
-                        )
+                        ),
                     ),
                     TrainingExercise(
                         exercise = Exercise("press inclinado", "normal", imgURI = R.drawable.press_banca),
@@ -198,7 +198,9 @@ fun PrevieEndRoutine() {
                             ExerciseSet(weight = 70.0, reps = 10, effort = 2)
                         )
                     )
-                )
+                ),
+                rutine = null,
+                modifiedRutine = true
             ),
             onEndTraining = {},
             onExtraExercise = {}

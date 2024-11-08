@@ -24,7 +24,6 @@ class Exercise {
 
 ' Class ExerciseRutine with association to Exercise
 class ExerciseRutine {
-    + exercise : Exercise
     + sets : Int
     + minReps : Int
     + maxReps : Int
@@ -33,7 +32,6 @@ class ExerciseRutine {
 ' Class Rutine with association to ExerciseRutine
 class Rutine {
     + name : String
-    + exercises : MutableList<ExerciseRutine>
 }
 
 ' Class ExerciseSet with weight, reps, and effort properties
@@ -45,7 +43,6 @@ class ExerciseSet {
 
 ' Class TrainingExercise with association to Exercise and ExerciseSet
 class TrainingExercise {
-    + exercise : Exercise
     + date : LocalDate?
     + sets : MutableList<ExerciseSet>
 }
@@ -53,14 +50,15 @@ class TrainingExercise {
 ' Class Training with association to TrainingExercise
 class Training {
     + date : LocalDate
-    + exercises : MutableList<TrainingExercise>
+    + modifiedRutine : Boolean
 }
 
 ' Associations between classes
 ExerciseRutine --> Exercise : exercise
-Rutine --> ExerciseRutine : exercises
+Rutine "0" --> "*" ExerciseRutine : exercises
 TrainingExercise --> Exercise : exercise
-TrainingExercise --> ExerciseSet : sets
-Training --> TrainingExercise : exercises
+TrainingExercise "0" --> "*" ExerciseSet : sets
+Training "0" --> "*" TrainingExercise : exercises
+Training --> Rutine: rutine
 
 @enduml

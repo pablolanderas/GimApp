@@ -53,7 +53,7 @@ fun DialogChangedRutine(
                 textAlign = TextAlign.Center
             )
             Text(
-                text = "¿Quieres guardar una modificación de la que tenias, crear una nueva o guarddar sin registrar una rutina?",
+                text = "¿Quieres guardar una modificación de la que tenías, crear una nueva o guardar sin registrar una rutina?",
                 style = TextStyle(
                     color = Color.White,
                     fontSize = MaterialTheme.typography.bodyMedium.fontSize,
