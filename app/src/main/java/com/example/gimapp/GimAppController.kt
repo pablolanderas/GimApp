@@ -17,7 +17,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.gimapp.AppViewModel
-import com.example.gimapp.domain.DatabBasev1
+import com.example.gimapp.data.DatabBasev1
 import com.example.gimapp.domain.ExerciseRutine
 import com.example.gimapp.domain.ExerciseSet
 import com.example.gimapp.domain.Rutine

@@ -1,4 +1,10 @@
-package com.example.gimapp.domain
+package com.example.gimapp.data
+
+import com.example.gimapp.domain.Exercise
+import com.example.gimapp.domain.MuscularGroup
+import com.example.gimapp.domain.Rutine
+import com.example.gimapp.domain.Training
+import com.example.gimapp.domain.TrainingExercise
 
 interface IDataBase {
 

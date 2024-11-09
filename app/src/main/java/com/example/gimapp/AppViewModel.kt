@@ -9,13 +9,11 @@ import com.example.gimapp.data.AppUiState
 import com.example.gimapp.domain.Exercise
 import com.example.gimapp.domain.ExerciseRutine
 import com.example.gimapp.domain.ExerciseSet
-import com.example.gimapp.domain.IDataBase
+import com.example.gimapp.data.IDataBase
 import com.example.gimapp.domain.MuscularGroup
 import com.example.gimapp.domain.Rutine
 import com.example.gimapp.domain.Training
 import com.example.gimapp.domain.TrainingExercise
-import com.example.gimapp.domain.historialPressBanca
-import com.example.gimapp.domain.rutinasPrueba
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update

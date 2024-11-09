@@ -39,9 +39,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.gimapp.components.Header
+import com.example.gimapp.data.ejerciciosPrueba
 import com.example.gimapp.domain.Exercise
 import com.example.gimapp.domain.MuscularGroup
-import com.example.gimapp.domain.ejerciciosPrueba
 import com.example.gimapp.ui.theme.GimAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -253,7 +253,7 @@ fun PreviewAddExerciseToTraining() {
     GimAppTheme {
         AddExerciseToTraining(
             onContinue = {},
-            getExercises = {ejerciciosPrueba},
+            getExercises = { ejerciciosPrueba },
             onAddExercise = {}
         )
     }
