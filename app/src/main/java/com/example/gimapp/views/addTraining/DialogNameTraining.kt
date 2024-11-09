@@ -41,9 +41,10 @@ import com.example.gimapp.ui.theme.GimAppTheme
 @Composable
 fun DialogNameTraining(
     onSaveTraining: (String) -> Unit,
-    onSaveRutine: (String) -> Unit
+    onSaveRutine: (String) -> Unit,
+    onExit: () -> Unit
 ) {
-    Dialog(onDismissRequest = { }) {
+    Dialog(onDismissRequest = { onExit() }) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -57,10 +58,8 @@ fun DialogNameTraining(
         ) {
             Text(
                 text = "Selecciona un nombre",
-                style = TextStyle(
-                    color = Color.White,
-                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                    fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.titleMedium.copy(
+                    color = Color.White
                 ),
                 textAlign = TextAlign.Center
             )
@@ -76,10 +75,8 @@ fun DialogNameTraining(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 ),
-                textStyle = TextStyle(
-                    color = Color.White,
-                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                    textAlign = TextAlign.Center
+                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                    color = Color.White
                 ),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
@@ -107,10 +104,8 @@ fun DialogNameTraining(
             ) {
                 Text(
                     text = if (text.equals("")) "Guardar como entrenamiento sin nombre" else "Guardar entrenamiento",
-                    style = TextStyle(
-                        color = Color.White,
-                        fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                        fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        color = Color.White
                     ),
                     textAlign = TextAlign.Center,
                     modifier = Modifier
@@ -130,10 +125,8 @@ fun DialogNameTraining(
             ) {
                 Text(
                     text = "Guardar como rutina",
-                    style = TextStyle(
-                        color = if (text == "") Color.Gray else Color.White,
-                        fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                        fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        color = if (text == "") Color.Gray else Color.White
                     ),
                     textAlign = TextAlign.Center,
                     modifier = Modifier
@@ -150,7 +143,7 @@ fun PreviewDialogNameTraining() {
     GimAppTheme {
         Spacer(modifier = Modifier.fillMaxSize())
         DialogNameTraining (
-            { }, { }
+            { }, { }, { }
         )
     }
 }

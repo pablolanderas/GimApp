@@ -38,8 +38,7 @@ fun MenuButton(
     ) {
         Text(
             text = text,
-            style = TextStyle(
-                fontSize = MaterialTheme.typography.titleMedium.fontSize,
+            style = MaterialTheme.typography.titleMedium.copy(
                 color = Color.White
             )
         )

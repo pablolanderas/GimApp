@@ -56,11 +56,12 @@ fun ExercisesViwer(
                         shape = RoundedCornerShape(8.dp)
                     )
             ) {
+                val textStyle = MaterialTheme.typography.bodyMedium
                 Text(
                     text = exercise.exercise.name.replaceFirstChar { it.uppercase() },
-                    style = TextStyle(
+                    style = textStyle.copy(
                         color = Color.White,
-                        fontSize = MaterialTheme.typography.bodyMedium.fontSize
+                        textAlign = TextAlign.Left
                     ),
                     modifier = Modifier
                         .padding(10.dp)
@@ -68,9 +69,9 @@ fun ExercisesViwer(
                 )
                 Text(
                     text = "x${exercise.sets.size}",
-                    style = TextStyle(
+                    style = textStyle.copy(
                         color = MaterialTheme.colorScheme.secondary,
-                        fontSize = MaterialTheme.typography.bodyMedium.fontSize
+                        textAlign = TextAlign.Right
                     ),
                     modifier = Modifier
                         .padding(10.dp)
@@ -97,11 +98,9 @@ fun EndRoutine(
         ) {
             Text(
                 text = "Ejercicios terminados",
-                style = TextStyle(
-                    color = Color.White,
-                    fontSize = MaterialTheme.typography.titleLarge.fontSize
+                style = MaterialTheme.typography.titleLarge.copy(
+                    color = Color.White
                 ),
-                textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 30.dp)
@@ -132,9 +131,7 @@ fun EndRoutine(
             ) {
                 Text(
                     text = "Ejercicio extra",
-                    style = TextStyle(
-                        fontSize = MaterialTheme.typography.bodyLarge.fontSize
-                    ),
+                    style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(vertical = 10.dp, horizontal = 20.dp)
                 )
             }
@@ -156,8 +153,7 @@ fun EndRoutine(
             ) {
                 Text(
                     text = "Acabar\nentrenamiento",
-                    style = TextStyle(
-                        fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                    style = MaterialTheme.typography.bodyLarge.copy(
                         textAlign = TextAlign.Center,
                         fontWeight = FontWeight.Bold
                     ),

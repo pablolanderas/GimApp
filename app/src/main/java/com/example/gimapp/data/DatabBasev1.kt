@@ -179,7 +179,7 @@ val ejerciciosPrueba: List<Exercise> = listOf(
     Exercise("press de pecho", "en máquina", MuscularGroup.Chest),
     Exercise("press de pierna", "en máquina", MuscularGroup.Leg),
     Exercise("peso muerto rumano", "con barra", MuscularGroup.Leg),
-    Exercise("crunch abdominal", "con peso", MuscularGroup.Chest),  // Similar a abdominales, podría ser abdominal.
+    Exercise("crunch abdominal", "con peso", MuscularGroup.Abs),  // Similar a abdominales, podría ser abdominal.
     Exercise("press Arnold", "con mancuernas", MuscularGroup.Shoulder),
     Exercise("press de pecho en banco plano", "con barra", MuscularGroup.Chest),
     Exercise("leg press", "en máquina", MuscularGroup.Leg),

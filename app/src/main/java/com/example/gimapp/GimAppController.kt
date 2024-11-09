@@ -18,6 +18,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.gimapp.AppViewModel
 import com.example.gimapp.data.DatabBasev1
+import com.example.gimapp.domain.Exercise
 import com.example.gimapp.domain.ExerciseRutine
 import com.example.gimapp.domain.ExerciseSet
 import com.example.gimapp.domain.Rutine
@@ -174,20 +175,21 @@ class GimAppController(
                 )
             }
             composable(route = GimScreens.AddExerciseToTraining.name) {
-                DialogSetExerciseRutineToTraining (
-                    exerciseName = "press banca",
-                    onSelected = {},
-                    onExit = {}
-                )
                 AddExerciseToTraining(
-                    onContinue = {
-                        TODO("Hay que lanzar un Dialog para rellenar cuantas series se quieren hacer, min y max de repes")
+                    onContinue = { exerciseRutine, context ->
+                        if (!exerciseRutine.isReal()) {
+                            showToast("Los datos no son válidos", context)
+                        } else {
+                            viewModel.setNoRutineExerciseRutine(exerciseRutine)
+                            navController.navigate(GimScreens.NextExercise.name)
+                        }
                     },
                     getExercises = { viewModel.getMuscleExercises(it) },
                     onAddExercise = { /*TODO*/ }
                 )
             }
             composable(route = GimScreens.EndRoutine.name) {
+                Log.d("DEBUGGING", "El end routine")
                 var showDialogUpdateRutine by remember { mutableStateOf(false) }
                 var showDialogEndNoRutine by remember { mutableStateOf(false) }
                 EndRoutine(
@@ -204,7 +206,8 @@ class GimAppController(
                     DialogChangedRutine(
                         onUpdate = { /*TODO*/ },
                         onCreate = { /*TODO*/ },
-                        onNoRegister = { /*TODO*/ }
+                        onNoRegister = { /*TODO*/ },
+                        onExit = { showDialogUpdateRutine = false }
                     )
                 }
                 if (showDialogEndNoRutine) {
@@ -215,7 +218,8 @@ class GimAppController(
                                 "MainActivityDebuging",
                                 "Pulsado entrenamiento con: $it"
                             )
-                        }
+                        },
+                        onExit = { showDialogEndNoRutine = false }
 
                     )
                 }
@@ -236,9 +240,11 @@ class GimAppController(
                 }
                 navController.navigate(GimScreens.Start.name)
             } else {
+                Log.d("DEBUGGING", "En else superior")
                 navController.navigate(GimScreens.EndRoutine.name)
             }
         } else {
+            Log.d("DEBUGGING", "El else inferior")
             viewModel.updateRutineToNextExercise()
             navController.navigate(GimScreens.NextExercise.name)
         }
@@ -247,7 +253,8 @@ class GimAppController(
     private fun endAndCheckRemainingSets(
             trainingExercise: TrainingExercise,
             context: Context,
-            message: (Int) -> String) {
+            message: (Int) -> String
+    ) {
         val remaining: Int = viewModel.setEndedSet()
         if (remaining == 0) {
             nextExerciseInTraining(trainingExercise)

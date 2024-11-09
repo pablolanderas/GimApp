@@ -44,14 +44,12 @@ import java.util.Locale
 @Composable
 fun InfoBar(
     title: String,
-    titleStyle: TextStyle = TextStyle(
-        color = MaterialTheme.colorScheme.primary,
-        fontSize = MaterialTheme.typography.bodyMedium.fontSize
+    titleStyle: TextStyle = MaterialTheme.typography.bodyMedium.copy(
+        color = MaterialTheme.colorScheme.primary
     ),
     value: String,
-    valueStyle: TextStyle = TextStyle(
-        color = Color.White,
-        fontSize = MaterialTheme.typography.bodyMedium.fontSize
+    valueStyle: TextStyle = MaterialTheme.typography.bodyMedium.copy(
+        color = Color.White
     ),
     modifier: Modifier,
     content: @Composable RowScope.() -> Unit = {}
@@ -88,14 +86,12 @@ fun ExerciseInfo(
     ){
         Text(
             text = exerciseRutine.exercise.name.replaceFirstChar { it.uppercase() },
+            style = MaterialTheme.typography.titleLarge,
+            color = Color.White,
+            textAlign = TextAlign.Center,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
-            textAlign = TextAlign.Center,
-            style = TextStyle(
-                color = Color.White,
-                fontSize = MaterialTheme.typography.titleLarge.fontSize
-            )
         )
         Column(
             modifier = Modifier
@@ -195,7 +191,9 @@ fun ExerciseHistorical(historical: List<TrainingExercise>) {
                                 Locale("es", "ES")
                             )
                         ),
-                        style = TextStyle(color = Color.White),
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            color = Color.White
+                        ),
                         modifier = Modifier
                             .padding(horizontal = 15.dp, vertical = 15.dp)
                     )
@@ -205,9 +203,8 @@ fun ExerciseHistorical(historical: List<TrainingExercise>) {
                         peso = pesos.joinToString(separator = ", ") { DecimalFormat("#.##").format(it) }
                     InfoBar(
                         title = "Peso:",
-                        titleStyle = TextStyle(
-                            color = MaterialTheme.colorScheme.secondary,
-                            fontSize = MaterialTheme.typography.bodySmall.fontSize
+                        titleStyle = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.secondary
                         ),
                         value = "${peso} kg",
                         valueStyle = TextStyle(
@@ -218,9 +215,8 @@ fun ExerciseHistorical(historical: List<TrainingExercise>) {
                     )
                     InfoBar(
                         title = "Repeticiones:",
-                        titleStyle = TextStyle(
-                            color = MaterialTheme.colorScheme.secondary,
-                            fontSize = MaterialTheme.typography.bodySmall.fontSize
+                        titleStyle = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.secondary
                         ),
                         value = entrenamiento.sets.map { it.reps }.joinToString(separator = ", "),
                         valueStyle = TextStyle(
@@ -251,13 +247,12 @@ fun NextExercise(
             modifier = Modifier
                 .padding(horizontal = 30.dp)
         ){
+            Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = "Siguiente:",
-                color = Color(0xFFFFFFFF),
-                style = TextStyle(
-                    fontSize = MaterialTheme.typography.titleMedium.fontSize
-                ),
-                modifier = Modifier.padding(top = 25.dp, bottom = 15.dp)
+                color = Color.White,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(bottom = 15.dp)
 
             )
             ExerciseInfo(
@@ -267,10 +262,8 @@ fun NextExercise(
                 removeWeight = false)
             Text(
                 text = "Historial:",
-                color = Color(0xFFFFFFFF),
-                style = TextStyle(
-                    fontSize = MaterialTheme.typography.titleMedium.fontSize
-                ),
+                color = Color.White,
+                style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(top = 25.dp, bottom = 15.dp)
             )
             ExerciseHistorical(historical)
@@ -286,16 +279,19 @@ fun NextExercise(
                             shape = RoundedCornerShape(15.dp)
                         )
                 ) {
-                    Text(text = "EMPEZAR", style = MaterialTheme.typography.titleMedium.copy(
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    ))
+                    Text(
+                        text = "EMPEZAR",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            color = Color.White
+                        )
+                    )
                 }
                 Spacer(modifier = Modifier.weight(1F))
             }
+            Spacer(modifier = Modifier.weight(1f))
             Row(modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 10.dp, bottom = 25.dp)) {
+                .padding(bottom = 25.dp)) {
                 Button(
                     onClick = onOtherExercise,
                     modifier = Modifier
@@ -315,8 +311,7 @@ fun NextExercise(
                     Text(
                         text = "Otro",
                         style = MaterialTheme.typography.titleSmall.copy(
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
+                            color = Color.White
                         )
                     )
                 }
@@ -340,8 +335,7 @@ fun NextExercise(
                     Text(
                         text = "Saltar",
                         style = MaterialTheme.typography.titleSmall.copy(
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
+                            color = Color.White
                         )
                     )
                 }

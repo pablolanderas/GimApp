@@ -66,9 +66,8 @@ fun ThisOutlinedTextField(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent
         ),
-        textStyle = TextStyle(
+        textStyle = MaterialTheme.typography.bodyMedium.copy(
             color = Color.White,
-            fontSize = MaterialTheme.typography.bodyMedium.fontSize,
             textAlign = TextAlign.Center
         ),
         keyboardOptions = KeyboardOptions(
@@ -222,10 +221,11 @@ fun DialogSetExerciseRutineToTraining(
                     .padding(top = 20.dp)
                     .align(Alignment.CenterHorizontally)
             ) {
-                androidx.compose.material.Text(
+                Text(
                     text = "Añadir",
-                    color = Color.White,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = Color.White,
+                    )
                 )
             }
         }
@@ -238,7 +238,7 @@ fun PreviewDialogSetExerciseRutineToTraining() {
     GimAppTheme {
         Spacer(modifier = Modifier.fillMaxSize())
         DialogSetExerciseRutineToTraining (
-            "press banca",
+            Exercise("press banca", "si"),
             {},
             {}
         )

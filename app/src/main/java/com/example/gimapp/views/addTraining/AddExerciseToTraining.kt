@@ -1,5 +1,6 @@
 package com.example.gimapp.views.addTraining
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -41,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import com.example.gimapp.components.Header
 import com.example.gimapp.data.ejerciciosPrueba
 import com.example.gimapp.domain.Exercise
+import com.example.gimapp.domain.ExerciseRutine
 import com.example.gimapp.domain.MuscularGroup
 import com.example.gimapp.ui.theme.GimAppTheme
 
@@ -65,8 +68,9 @@ fun DropListMuscularGroup(
             value = selectedOption?.getText() ?: "Seleccion un grupo muscular",
             onValueChange = { },
             readOnly = true,
-            textStyle = TextStyle(
-                color = Color.White
+            textStyle = MaterialTheme.typography.bodyMedium.copy(
+                color = Color.White,
+                textAlign = TextAlign.Left
             ),
             trailingIcon = {
                 Icon(
@@ -105,6 +109,7 @@ fun DropListMuscularGroup(
                     text = {
                         androidx.compose.material3.Text(
                             text = option.getText(),  // Centra el texto dentro de la DropdownMenuItem
+                            style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.fillMaxWidth()  // Asegura que el texto ocupe todo el ancho disponible
                         )
                     },
@@ -121,7 +126,6 @@ fun DropListMuscularGroup(
 @Composable
 fun ExerciseSelector(
     modifier: Modifier = Modifier,
-    selection: Exercise?,
     options: List<Exercise>,
     showAddExercise: Boolean,
     selected: (Exercise) -> Unit,
@@ -136,13 +140,11 @@ fun ExerciseSelector(
             )
             .padding(10.dp)
     ) {
-        var InteralPadding = 0.dp
         items(options) { exercise ->
-            val isSelected = exercise == selection
             Button(
                 onClick = { selected(exercise) },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (!isSelected) MaterialTheme.colorScheme.secondary else Color.Gray
+                    containerColor = MaterialTheme.colorScheme.secondary
                 ),
                 shape = RoundedCornerShape(5.dp),
                 modifier = Modifier
@@ -151,8 +153,7 @@ fun ExerciseSelector(
             ) {
                 Text(
                     text = exercise.name.replaceFirstChar { it.uppercase() },
-                    style = TextStyle(
-                        fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                    style = MaterialTheme.typography.bodyMedium.copy(
                         color = Color.White
                     ),
                     modifier = Modifier
@@ -172,8 +173,10 @@ fun ExerciseSelector(
                 ) {
                     Text(
                         text = "+",
-                        color = Color.White,
-                        style = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
                     )
                 }
             }
@@ -183,7 +186,7 @@ fun ExerciseSelector(
 
 @Composable
 fun AddExerciseToTraining(
-    onContinue: (Exercise) -> Unit,
+    onContinue: (ExerciseRutine, Context) -> Unit,
     getExercises: (MuscularGroup) -> List<Exercise>,
     onAddExercise: () -> Unit
 ) {
@@ -193,12 +196,22 @@ fun AddExerciseToTraining(
         var musucarGroup: MuscularGroup? by remember { mutableStateOf(null) }
         var exercise: Exercise? by remember { mutableStateOf(null) }
         var exerciseList = musucarGroup?.let { getExercises(it) } ?: emptyList()
+        var showDialog: Boolean by remember { mutableStateOf(false) }
+        val context: Context = LocalContext.current
+        if (showDialog) {
+            DialogSetExerciseRutineToTraining (
+                exercise = exercise ?: throw Error("The exercise is not selected and the dialog was called"),
+                onSelected = {
+                    onContinue(it, context)
+                    showDialog = false
+                    },
+                onExit = { showDialog = false }
+            )
+        }
         Text(
             text = "Selecciona el ejercicio",
-            color = Color.White,
-            style = TextStyle(
-                fontSize = MaterialTheme.typography.titleLarge.fontSize,
-                textAlign = TextAlign.Center
+            style = MaterialTheme.typography.titleLarge.copy(
+                color = Color.White
             ),
             modifier = Modifier
                 .fillMaxWidth()
@@ -213,7 +226,6 @@ fun AddExerciseToTraining(
             selectedOption = musucarGroup,
             optionSelected = {
                 musucarGroup = it
-                exercise = null
             },
         )
         ExerciseSelector(
@@ -222,27 +234,15 @@ fun AddExerciseToTraining(
                     horizontal = 30.dp
                 )
                 .weight(1f),
-            selection = exercise,
             options = exerciseList,
             showAddExercise = musucarGroup != null,
-            selected = { exercise = it },
+            selected = {
+                exercise = it
+                showDialog = true
+            },
             onAddExercise = onAddExercise
         )
-        Button(
-            onClick = { exercise?.let { onContinue(it) } },
-            shape = RoundedCornerShape(20), // Hace el botón redondo
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-            modifier = Modifier
-                .padding(top = 20.dp)
-                .align(Alignment.CenterHorizontally)
-        ) {
-            Text(
-                text = "Continuar",
-                color = Color.White,
-                style = MaterialTheme.typography.titleMedium
-            )
-        }
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(50.dp))
     }
 }
 
@@ -252,7 +252,7 @@ fun AddExerciseToTraining(
 fun PreviewAddExerciseToTraining() {
     GimAppTheme {
         AddExerciseToTraining(
-            onContinue = {},
+            onContinue = { _, _ -> },
             getExercises = { ejerciciosPrueba },
             onAddExercise = {}
         )

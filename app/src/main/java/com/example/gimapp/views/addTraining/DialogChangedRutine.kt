@@ -29,9 +29,10 @@ import com.example.gimapp.ui.theme.GimAppTheme
 fun DialogChangedRutine(
     onUpdate: () -> Unit,
     onCreate: () -> Unit,
-    onNoRegister: () -> Unit
+    onNoRegister: () -> Unit,
+    onExit: () -> Unit
 ) {
-    Dialog(onDismissRequest = { }) {
+    Dialog(onDismissRequest = { onExit() }) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -45,19 +46,15 @@ fun DialogChangedRutine(
         ) {
             Text(
                 text = "Se han detectado cambios en la rutina",
-                style = TextStyle(
-                    color = Color.White,
-                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                    fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.titleMedium.copy(
+                    color = Color.White
                 ),
                 textAlign = TextAlign.Center
             )
             Text(
                 text = "¿Quieres guardar una modificación de la que tenías, crear una nueva o guardar sin registrar una rutina?",
-                style = TextStyle(
-                    color = Color.White,
-                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                    fontWeight = FontWeight.Normal
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = Color.White
                 ),
                 textAlign = TextAlign.Center,
                 modifier = Modifier
@@ -77,10 +74,8 @@ fun DialogChangedRutine(
                 ) {
                     Text(
                         text = "Modificar",
-                        style = TextStyle(
-                            color = Color.White,
-                            fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                            fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            color = Color.White
                         ),
                         textAlign = TextAlign.Center,
                         modifier = Modifier
@@ -101,10 +96,8 @@ fun DialogChangedRutine(
                 ) {
                     Text(
                         text = "Nueva",
-                        style = TextStyle(
-                            color = Color.White,
-                            fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                            fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            color = Color.White
                         ),
                         textAlign = TextAlign.Center,
                         modifier = Modifier
@@ -126,10 +119,8 @@ fun DialogChangedRutine(
             ) {
                 Text(
                     text = "Guardar sin registrar",
-                    style = TextStyle(
-                        color = Color.White,
-                        fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                        fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        color = Color.White
                     ),
                     textAlign = TextAlign.Center,
                     modifier = Modifier
@@ -146,7 +137,7 @@ fun PreviewDialogChangedRutine() {
     GimAppTheme {
         Spacer(modifier = Modifier.fillMaxSize())
         DialogChangedRutine(
-            { }, { }, { }
+            { }, { }, { }, { }
         )
     }
 }

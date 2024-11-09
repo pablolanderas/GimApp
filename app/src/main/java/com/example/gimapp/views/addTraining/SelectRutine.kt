@@ -59,9 +59,8 @@ fun DropListRutine(
                 vertical = 10.dp
             ),
             text = "Rutina:",
-            style = TextStyle(
-                fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                color = Color(0xFFFFFFFF)
+            style = MaterialTheme.typography.bodyLarge.copy(
+                color = Color.White
             )
         )
         var expanded by remember { mutableStateOf(false) }
@@ -78,8 +77,9 @@ fun DropListRutine(
                 value = selectedOption?.name ?: if (!selected) "Seleccione una rutina" else "Entrenamiento libre",
                 onValueChange = { },
                 readOnly = true,
-                textStyle = TextStyle(
-                    color = Color.White
+                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                    color = Color.White,
+                    textAlign = TextAlign.Left
                 ),
                 trailingIcon = {
                     Icon(
@@ -119,6 +119,7 @@ fun DropListRutine(
                             Text(
                                 text = option?.name ?: "--- Entrenamiento libre ---",
                                 textAlign = if (option==null) TextAlign.Center else TextAlign.Start,  // Centra el texto dentro de la DropdownMenuItem
+                                style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.fillMaxWidth()  // Asegura que el texto ocupe todo el ancho disponible
                             )
                         },
@@ -144,9 +145,8 @@ fun ListExercisesRutine(rutine: Rutine?) {
                 vertical = 10.dp
             ),
             text = "Ejercicios:",
-            style = TextStyle(
-                fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                color = Color(0xFFFFFFFF)
+            style = MaterialTheme.typography.bodyLarge.copy(
+                color = Color.White
             )
         )
         LazyColumn(
@@ -174,7 +174,7 @@ fun ListExercisesRutine(rutine: Rutine?) {
                     Text(
                         text = ejercicio.exercise.name.replaceFirstChar { it.uppercase() },
                         modifier = Modifier.padding(16.dp),
-                        style = TextStyle(
+                        style = MaterialTheme.typography.bodyMedium.copy(
                             color = Color.White
                         )
                     )
@@ -183,7 +183,7 @@ fun ListExercisesRutine(rutine: Rutine?) {
                         text = "x${ejercicio.sets}",
                         modifier = Modifier
                             .padding(16.dp),
-                        style = TextStyle(
+                        style = MaterialTheme.typography.bodyMedium.copy(
                             color = MaterialTheme.colorScheme.tertiary
                         )
                     )
@@ -236,10 +236,8 @@ fun SelectRutine(
                 ){
                     Text(
                         text = "EMPEZAR",
-                        style = TextStyle(
-                            color = Color(0xFFFFFFFF),
-                            fontSize = MaterialTheme.typography.bodyLarge.fontSize,
-                            fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            color = Color.White
                         )
                     )
                 }

@@ -75,11 +75,9 @@ fun TitleRow(
         Spacer(modifier = Modifier.size(20.dp))
         Text(
             text = exerciseRutine.exercise.name.replaceFirstChar { it.uppercase() },
-            color = MaterialTheme.colorScheme.primary,
-            style = TextStyle(
-                fontSize = MaterialTheme.typography.titleLarge.fontSize,
-                textAlign = TextAlign.Center
-            ),
+            style = MaterialTheme.typography.titleLarge,
+            color = Color.White,
+            textAlign = TextAlign.Center,
             modifier = Modifier
                 .align(Alignment.CenterVertically)
                 .weight(1f)
@@ -200,10 +198,8 @@ fun ColumOfTextSelecter(
     ) {
         Text(
             text = text,
-            style = TextStyle(
-                color = Color.White,
-                fontSize = MaterialTheme.typography.bodyMedium.fontSize
-            ),
+            style = MaterialTheme.typography.titleMedium,
+            color = Color.White,
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .fillMaxWidth()
@@ -222,11 +218,8 @@ fun ColumOfTextSelecter(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent
             ),
-            textStyle = TextStyle(
-                color = Color.White,
-                fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                textAlign = TextAlign.Center
-            ),
+            textStyle = MaterialTheme.typography.bodyMedium
+                .copy(color = Color.White),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number, // Configurar el teclado para que sea numérico
                 imeAction = ImeAction.Next
@@ -258,12 +251,10 @@ fun MiniBox(
     ) {
         Text(
             text = title,
-            style = TextStyle(
-                color = Color.White,
-                fontSize = MaterialTheme.typography.bodyMedium.fontSize
-            ),
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.White,
+            textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
         )
         Column (
             modifier = Modifier
@@ -303,12 +294,10 @@ fun ExerciseHistorical(
                             shape = RoundedCornerShape(8.dp)
                         )
                 ) {
+                    val textStyle = MaterialTheme.typography.bodySmall
                     Text(
                         text = "${index+1}.",
-                        style = TextStyle(
-                            fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                            textAlign = TextAlign.Center
-                        ),
+                        style = textStyle,
                         modifier = Modifier
                             .padding(5.dp)
 
@@ -316,10 +305,7 @@ fun ExerciseHistorical(
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
                         text = "${if (set.weight % 1.0 == 0.0) set.weight.toInt() else set.weight}kg x ${set.reps}",
-                        style = TextStyle(
-                            fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                            textAlign = TextAlign.Center
-                        ),
+                        style = textStyle,
                         modifier = Modifier
                             .padding(5.dp)
 
@@ -413,10 +399,8 @@ fun NavigateButtons(
             ) {
                 Text(
                     text = "Otra",
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
+                    style = MaterialTheme.typography.titleSmall,
+                    color = Color.White
                 )
             }
             Spacer(modifier = Modifier.weight(0.05f))
@@ -518,9 +502,8 @@ fun AddSet(
                 .fillMaxWidth()
                 .padding(vertical = 10.dp),
             text = if (remainingSets > 1) "Quedan $remainingSets series" else "Útima serie",
-            style = TextStyle(
-                color = Color.White,
-            ),
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.White,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.weight(1f))
@@ -545,10 +528,8 @@ fun AddSet(
             ) {
                 Text(
                     text = if (state != AddSetState.Last) "SIGUIENTE" else "ACABAR",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White
                 )
             }
             Spacer(modifier = Modifier.weight(1f))

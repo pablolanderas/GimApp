@@ -93,7 +93,7 @@ class AppViewModel(
             val exercisePosition: Int = uiState.value.actualRuniteExercise
             return rutine.exercises[exercisePosition]
         } else {
-            throw Error("The rutine and the exercise temporal are not inicialiced")
+            return  ExerciseRutine(exercise = Exercise("ERROR EXERCISE", "ERROR"), -1, -1, -1)
         }
     }
 
@@ -150,7 +150,6 @@ class AppViewModel(
         var trainings: List<TrainingExercise> = db.getExerciseTrainings(e)
         var last = trainings.maxByOrNull { it.date ?: LocalDate.MIN }
         return last?.sets?.get(0)
-        /// return null
     }
 
     fun saveTraining(t: Training) {
