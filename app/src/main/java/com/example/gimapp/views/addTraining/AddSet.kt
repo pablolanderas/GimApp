@@ -172,9 +172,7 @@ fun WeightAndRepsSelecter(
             text = "Peso",
             modifier = Modifier.weight(1f),
             value = weightValue,
-            onNext = {
-                focusRequester.requestFocus()
-                     },
+            onNext = { focusRequester.requestFocus() },
             onValueChange = onValueChangeWeight
         )
         ColumOfTextSelecter(

@@ -26,6 +26,8 @@ class ExerciseRutine {
     + sets : Int
     + minReps : Int
     + maxReps : Int
+
+  + isReal() : Boolean
 }
 
 class Rutine {

@@ -132,7 +132,7 @@ class KotlinClass(Element):
         if self.functions:
             text += "\n"
         for fun in self.functions:
-            text += f"  + {fun.name}({', '.join(argumentsToUML(fun.args))}) : {atr.type}\n"
+            text += f"  + {fun.name}({', '.join(argumentsToUML(fun.args))}) : {fun.type}\n"
         return text + "}\n"
     
     def getUmlTextAssociations(self, otherClasses: list[str]) -> str:

@@ -35,7 +35,11 @@ class ExerciseRutine(
     val sets: Int,
     val minReps: Int,
     val maxReps: Int
-)
+) {
+    fun isReal() : Boolean {
+        return sets > 0 && minReps > 0 && maxReps > 0 && minReps <= maxReps
+    }
+}
 
 class Rutine(
     val name: String,

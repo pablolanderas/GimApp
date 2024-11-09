@@ -28,6 +28,7 @@ import com.example.gimapp.views.addTraining.AddSet
 import com.example.gimapp.views.addTraining.AddSetState
 import com.example.gimapp.views.addTraining.DialogChangedRutine
 import com.example.gimapp.views.addTraining.DialogNameTraining
+import com.example.gimapp.views.addTraining.DialogSetExerciseRutineToTraining
 import com.example.gimapp.views.addTraining.EndRoutine
 import com.example.gimapp.views.addTraining.NextExercise
 import com.example.gimapp.views.menu.MainMenu
@@ -173,6 +174,11 @@ class GimAppController(
                 )
             }
             composable(route = GimScreens.AddExerciseToTraining.name) {
+                DialogSetExerciseRutineToTraining (
+                    exerciseName = "press banca",
+                    onSelected = {},
+                    onExit = {}
+                )
                 AddExerciseToTraining(
                     onContinue = {
                         TODO("Hay que lanzar un Dialog para rellenar cuantas series se quieren hacer, min y max de repes")
