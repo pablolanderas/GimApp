@@ -1,9 +1,5 @@
 package com.example.gimapp.domain
 
-import com.example.gimapp.R
-import android.os.Build
-import androidx.annotation.RequiresApi
-import androidx.annotation.StringRes
 import java.time.LocalDate
 
 enum class MuscularGroup(
@@ -41,7 +37,7 @@ class ExerciseRutine(
     }
 }
 
-class Rutine(
+class Routine(
     val name: String,
     val exercises: MutableList<ExerciseRutine>
 )
@@ -61,6 +57,6 @@ class TrainingExercise(
 class Training(
     val date: LocalDate,
     val exercises: MutableList<TrainingExercise>,
-    val rutine: Rutine?,
+    val routine: Routine?,
     val modifiedRutine: Boolean
 )

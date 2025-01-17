@@ -11,7 +11,7 @@ import com.example.gimapp.domain.ExerciseRutine
 import com.example.gimapp.domain.ExerciseSet
 import com.example.gimapp.data.IDataBase
 import com.example.gimapp.domain.MuscularGroup
-import com.example.gimapp.domain.Rutine
+import com.example.gimapp.domain.Routine
 import com.example.gimapp.domain.Training
 import com.example.gimapp.domain.TrainingExercise
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,10 +28,10 @@ class AppViewModel(
     private var TAG: String = "MainActivityDebuging"
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun setActualRutine(r: Rutine?) {
+    fun setActualRutine(r: Routine?) {
         _uiState.update { currentState ->
             currentState.copy(
-                actualRutine = r,
+                actualRoutine = r,
                 actualRuniteExercise = 0,
                 remainingSets = r?.exercises?.get(0)?.sets ?: 0,
                 actualTraining = Training(LocalDate.now(), mutableListOf(), r, false)
@@ -80,7 +80,7 @@ class AppViewModel(
         _uiState.update { currentState ->
             currentState.copy(
                 actualRuniteExercise = currentState.actualRuniteExercise + 1,
-                remainingSets = currentState.actualRutine?.exercises?.get(currentState.actualRuniteExercise + 1)?.sets ?: 0
+                remainingSets = currentState.actualRoutine?.exercises?.get(currentState.actualRuniteExercise + 1)?.sets ?: 0
             )
         }
     }
@@ -88,20 +88,20 @@ class AppViewModel(
     fun getNextExercise() : ExerciseRutine {
         if (uiState.value.noRutineExerciseRutine != null) {
             return uiState.value.noRutineExerciseRutine!!
-        } else if (uiState.value.actualRutine != null) {
-            val rutine: Rutine = uiState.value.actualRutine!!
+        } else if (uiState.value.actualRoutine != null) {
+            val routine: Routine = uiState.value.actualRoutine!!
             val exercisePosition: Int = uiState.value.actualRuniteExercise
-            return rutine.exercises[exercisePosition]
+            return routine.exercises[exercisePosition]
         } else {
             return  ExerciseRutine(exercise = Exercise("ERROR EXERCISE", "ERROR"), -1, -1, -1)
         }
     }
 
     fun isLastRutineExercie() : Boolean {
-        if (uiState.value.actualRutine == null) return true
+        if (uiState.value.actualRoutine == null) return true
         val exercisePosition: Int = uiState.value.actualRuniteExercise
-        val rutine: Rutine = uiState.value.actualRutine!!
-        return rutine.exercises.size == exercisePosition + 1
+        val routine: Routine = uiState.value.actualRoutine!!
+        return routine.exercises.size == exercisePosition + 1
     }
 
     fun getRemainingSets(): Int {
@@ -112,8 +112,8 @@ class AppViewModel(
         return _uiState.value.actualTraining ?: throw Error("The training is null")
     }
 
-    fun getActualRutine(): Rutine? {
-        return _uiState.value.actualRutine
+    fun getActualRutine(): Routine? {
+        return _uiState.value.actualRoutine
     }
 
     fun getMenuMesage(): (@Composable (onClick: () -> Unit) -> Unit)? {
@@ -141,7 +141,7 @@ class AppViewModel(
         return db.getExerciseTrainings(e)
     }
 
-    fun getAllRutines() : List<Rutine> {
+    fun getAllRutines() : List<Routine> {
         return db.getAllRutines()
     }
 
@@ -156,8 +156,20 @@ class AppViewModel(
         db.saveTraining(t)
     }
 
+    fun getAllTrainings(): List<Training> {
+        return db.getAllTrainings()
+    }
+
     fun getMuscleExercises(m: MuscularGroup): List<Exercise> {
         return db.getExercisesByMuscle(m)
+    }
+
+    fun setTrainingWatching(t: Training) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                trainingWatching = t
+            )
+        }
     }
 
 }

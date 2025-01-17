@@ -1,0 +1,20 @@
+CAMBIO DE ARQUITECTURA A MVVM
+
+# Hecho
+[x] Revisada la vista main
+[x] Revisada la vista SelectRoutine
+[x] Revisada la vista NextExercise
+[ ] Revisada la vista OnSet
+[ ] Revisada la vista AddExerciseToTraining
+[ ] Revisada la vista EndRoutine
+[ ] Revisada la vista Historical
+[ ] Revisada la vista SeeTraining
+
+# TODO
+- Comprobar que funciona bien cuando se añade otro ejericio al final de la rutina, no en mitad
+- En vista main, mirar bien lo de la notificacion
+- Hacer la base de datos
+- Arreglar navegacion
+
+# Enlaces
+- video de la inyeccion de dependencias: https://www.youtube.com/watch?v=PBYnVFT2CI8&t=550s

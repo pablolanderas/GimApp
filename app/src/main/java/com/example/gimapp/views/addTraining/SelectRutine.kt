@@ -27,29 +27,29 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.gimapp.TrainViewModel
 import com.example.gimapp.components.Header
 import com.example.gimapp.domain.ExerciseRutine
-import com.example.gimapp.domain.Rutine
+import com.example.gimapp.domain.Routine
 import com.example.gimapp.ui.theme.GimAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DropListRutine(
-    options: List<Rutine?>,
-    selectedOption: Rutine?,
+    options: List<Routine>,
+    selectedOption: Routine?,
     selected: Boolean,
-    optionSelected: (Rutine?) -> Unit
+    optionSelected: (Routine?) -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -117,10 +117,10 @@ fun DropListRutine(
                     DropdownMenuItem(
                         text = {
                             Text(
-                                text = option?.name ?: "--- Entrenamiento libre ---",
-                                textAlign = if (option==null) TextAlign.Center else TextAlign.Start,  // Centra el texto dentro de la DropdownMenuItem
+                                text = option.name,
+                                textAlign = TextAlign.Start,
                                 style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.fillMaxWidth()  // Asegura que el texto ocupe todo el ancho disponible
+                                modifier = Modifier.fillMaxWidth()
                             )
                         },
                         onClick = {
@@ -129,14 +129,28 @@ fun DropListRutine(
                         },
                     )
                 }
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "--- Entrenamiento libre ---",
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    },
+                    onClick = {
+                        optionSelected(null)
+                        expanded = false
+                    }
+                )
             }
         }
     }
 }
 
 @Composable
-fun ListExercisesRutine(rutine: Rutine?) {
-    val ejercicios = rutine?.exercises ?: emptyList<ExerciseRutine>()
+fun ListExercisesRutine(routine: Routine?) {
+    val ejercicios = routine?.exercises ?: emptyList<ExerciseRutine>()
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -194,11 +208,11 @@ fun ListExercisesRutine(rutine: Rutine?) {
 }
 
 @Composable
-fun SelectRutine(
-    onRutineSelected : (Rutine?) -> Unit,
-    rutines: List<Rutine?>
+fun SelectRoutine(
+    onRoutineSelected : () -> Unit,
+    viewModel: TrainViewModel
 ) {
-    var selectedOption: Rutine? by remember { mutableStateOf(null) }
+    val selectedOption: Routine? by viewModel.routine.observeAsState(initial = null)
     var selected: Boolean by remember { mutableStateOf(false) }
     Header() {
         Box(modifier = Modifier
@@ -210,11 +224,11 @@ fun SelectRutine(
                 verticalArrangement = Arrangement.SpaceEvenly
             ){
                 DropListRutine(
-                    options = rutines,
+                    options = viewModel.getAllRoutines(),
                     selectedOption = selectedOption,
                     selected = selected,
                     optionSelected = {
-                        selectedOption = it
+                        viewModel.setRoutine(it)
                         selected = true
                     }
                 )
@@ -230,15 +244,21 @@ fun SelectRutine(
                             shape = RoundedCornerShape(10.dp)
                         ),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = Color.White,
+                        disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                        disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                     ),
-                    onClick = { if (selected) { onRutineSelected(selectedOption) } }
+                    enabled = selected,
+                    onClick = {
+                        if (selected) {
+                            onRoutineSelected()
+                        }
+                    }
                 ){
                     Text(
                         text = "EMPEZAR",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            color = Color.White
-                        )
+                        style = MaterialTheme.typography.titleMedium
                     )
                 }
             }
@@ -248,8 +268,8 @@ fun SelectRutine(
 
 @Preview(showSystemUi = true)
 @Composable
-fun PreviewSelectRutina() {
+fun PreviewSelectRoutine() {
     GimAppTheme {
-        SelectRutine({}, emptyList())
+        SelectRoutine({}, TrainViewModel())
     }
 }

@@ -28,13 +28,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.gimapp.R
+import com.example.gimapp.TrainViewModel
 import com.example.gimapp.components.Header
-import com.example.gimapp.domain.Exercise
 import com.example.gimapp.domain.ExerciseRutine
 import com.example.gimapp.domain.TrainingExercise
 import com.example.gimapp.ui.theme.GimAppTheme
@@ -234,12 +233,13 @@ fun ExerciseHistorical(historical: List<TrainingExercise>) {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NextExercise(
-    exerciseRutine: ExerciseRutine,
-    historical: List<TrainingExercise>,
-    onSkipExercise: () -> Unit,
+    viewModel: TrainViewModel,
+    onOtherExercise: () -> Unit,
     onStartExercise: () -> Unit,
-    onOtherExercise: () -> Unit
+    onAddExercise: () -> Unit,
+    onEndRoutine: () -> Unit
 ) {
+    val exerciseRoutine: ExerciseRutine = viewModel.getActualExerciseRoutineNoNullable()
     Header(
         verticalArrangement = Arrangement.SpaceEvenly,
     ) {
@@ -256,7 +256,7 @@ fun NextExercise(
 
             )
             ExerciseInfo(
-                exerciseRutine = exerciseRutine,
+                exerciseRutine = exerciseRoutine,
                 weight = 70.0,
                 addWeight = true,
                 removeWeight = false)
@@ -266,7 +266,9 @@ fun NextExercise(
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(top = 25.dp, bottom = 15.dp)
             )
-            ExerciseHistorical(historical)
+            ExerciseHistorical(
+                viewModel.getExerciseHistorical(exerciseRoutine.exercise)
+            )
             Row(modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 20.dp)) {
@@ -293,7 +295,7 @@ fun NextExercise(
                 .fillMaxWidth()
                 .padding(bottom = 25.dp)) {
                 Button(
-                    onClick = onOtherExercise,
+                    onClick = onAddExercise,
                     modifier = Modifier
                         .weight(0.2f)
                         .border(
@@ -317,7 +319,9 @@ fun NextExercise(
                 }
                 Spacer(modifier = Modifier.weight(0.3f))
                 Button(
-                    onClick = onSkipExercise,
+                    onClick = {
+                        viewModel.skipActualExerciseRoutine(onOtherExercise, onEndRoutine)
+                    },
                     modifier = Modifier
                         .weight(0.2f)
                         .border(
@@ -350,16 +354,11 @@ fun NextExercise(
 fun PrevieNextEjercicio() {
     GimAppTheme {
         NextExercise(
-            exerciseRutine = ExerciseRutine(
-                exercise = Exercise("press banca", "con banca"),
-                sets = 4,
-                minReps = 8,
-                maxReps = 10
-            ),
-            historical = emptyList<TrainingExercise>(),
-            onSkipExercise = {},
+            TrainViewModel(),
+            onOtherExercise = {},
             onStartExercise = {},
-            onOtherExercise = {}
+            onAddExercise = {},
+            onEndRoutine = {}
         )
     }
 }

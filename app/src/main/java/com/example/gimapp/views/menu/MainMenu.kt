@@ -47,14 +47,15 @@ fun MenuButton(
 
 @Composable
 fun MainMenu(
-    onNewTrainClicked: () -> Unit
+    onNewTrainClicked: () -> Unit,
+    onHistoricalClicked: () -> Unit
 ) {
     Header(
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         MenuButton(text = "Nuevo entrenamiento", onClicked = onNewTrainClicked)
-        MenuButton(text = "Historial")
+        MenuButton(text = "Historial", onClicked = onHistoricalClicked)
         MenuButton(text = "Rutinas")
         MenuButton(text = "Ejercicios")
         MenuButton(text = "Ajustes")
@@ -65,6 +66,6 @@ fun MainMenu(
 @Composable
 fun PreviewPaginaInicio() {
     GimAppTheme {
-        MainMenu({})
+        MainMenu({}, {})
     }
 }

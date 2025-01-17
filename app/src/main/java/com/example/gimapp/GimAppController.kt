@@ -4,6 +4,10 @@ import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -12,16 +16,22 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.gimapp.AppViewModel
+import com.example.gimapp.TrainViewModel
 import com.example.gimapp.data.DatabBasev1
+import com.example.gimapp.data.database.DatabaseProvider
 import com.example.gimapp.domain.Exercise
 import com.example.gimapp.domain.ExerciseRutine
 import com.example.gimapp.domain.ExerciseSet
-import com.example.gimapp.domain.Rutine
+import com.example.gimapp.domain.Routine
 import com.example.gimapp.domain.Training
 import com.example.gimapp.domain.TrainingExercise
 import com.example.gimapp.views.addTraining.AddExerciseToTraining
@@ -29,13 +39,17 @@ import com.example.gimapp.views.addTraining.AddSet
 import com.example.gimapp.views.addTraining.AddSetState
 import com.example.gimapp.views.addTraining.DialogChangedRutine
 import com.example.gimapp.views.addTraining.DialogNameTraining
-import com.example.gimapp.views.addTraining.DialogSetExerciseRutineToTraining
 import com.example.gimapp.views.addTraining.EndRoutine
 import com.example.gimapp.views.addTraining.NextExercise
 import com.example.gimapp.views.menu.MainMenu
 import com.example.gimapp.views.menu.MenuMessage
-import com.example.gimapp.views.addTraining.SelectRutine
+import com.example.gimapp.views.addTraining.SelectRoutine
+import com.example.gimapp.views.historical.ShowHistorical
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
 
 enum class GimScreens() {
     Start,
@@ -43,16 +57,20 @@ enum class GimScreens() {
     SelectRoutine,
     OnSet,
     AddExerciseToTraining,
-    EndRoutine
+    EndRoutine,
+    Historical,
+    SeeTraining
 }
 
+
 class GimAppController(
-    private val viewModel: AppViewModel = AppViewModel(DatabBasev1()),
+    private val goodViewModel: TrainViewModel,
+    private val badViewModel: AppViewModel = AppViewModel(DatabBasev1()),
 ) {
 
     private lateinit var navController: NavHostController
 
-    @SuppressLint("DefaultLocale")
+    @SuppressLint("DefaultLocale", "CoroutineCreationDuringComposition")
     @RequiresApi(Build.VERSION_CODES.O)
     @Composable
     fun StartApp() {
@@ -62,51 +80,50 @@ class GimAppController(
             startDestination = GimScreens.Start.name
         ) {
             composable(route = GimScreens.Start.name) {
-                val message: (@Composable (onClick: () -> Unit) -> Unit)? = viewModel.getMenuMesage()
+                val message: (@Composable (onClick: () -> Unit) -> Unit)? = badViewModel.getMenuMesage()
                 var showMessage: Boolean by remember { mutableStateOf(true) }
                 Log.d("DEBUGGING", "El show: $showMessage")
                 Log.d("DEBUGGING", "El msg: $message")
                 MainMenu(
-                    onNewTrainClicked = { navController.navigate(GimScreens.SelectRoutine.name) }
+                    onNewTrainClicked = { navController.navigate(GimScreens.SelectRoutine.name) },
+                    onHistoricalClicked = { navController.navigate(GimScreens.Historical.name) }
                 )
                 if (showMessage) {
                     if (message != null) {
                         message {
                             showMessage = false
-                            viewModel.resetMenuMessage()
+                            badViewModel.resetMenuMessage()
                         }
                     }
                 }
             }
             composable(route = GimScreens.SelectRoutine.name) {
-                SelectRutine(
-                    onRutineSelected = {
-                        viewModel.setActualRutine(it)
-                        if (it != null)
+                SelectRoutine(
+                    onRoutineSelected = {
+                        if (goodViewModel.routine.value != null)
                             navController.navigate(GimScreens.NextExercise.name)
                         else
                             navController.navigate(GimScreens.AddExerciseToTraining.name)
                     },
-                    rutines = viewModel.getAllRutines()
-                                .map { it as Rutine? } // Convierte cada elemento a Rutine?
-                                .toMutableList() // Convierte la lista a mutable para añadirle el null
-                                .apply {
-                                    add(null) // Añade null al final
-                                }
+                    viewModel = goodViewModel
                 )
             }
             composable(route = GimScreens.NextExercise.name) {
-                val exerciseRutine: ExerciseRutine = viewModel.getNextExercise()
                 NextExercise(
-                    exerciseRutine = exerciseRutine,
-                    historical = viewModel.getExerciseHistorical(exerciseRutine.exercise),
-                    onSkipExercise = { nextExerciseInTraining(null) },
+                    viewModel = goodViewModel,
+                    onOtherExercise = { navController.navigate(GimScreens.NextExercise.name) },
                     onStartExercise = { navController.navigate(GimScreens.OnSet.name) },
-                    onOtherExercise = { navController.navigate(GimScreens.AddExerciseToTraining.name)}
+                    onAddExercise = { navController.navigate(GimScreens.AddExerciseToTraining.name)},
+                    onEndRoutine = { navController.navigate(GimScreens.EndRoutine.name) }
                 )
+                /*
+                val exerciseRutine: ExerciseRutine = badViewModel.getNextExercise()
+                exerciseRutine = exerciseRutine,
+                historical = badViewModel.getExerciseHistorical(exerciseRutine.exercise),
+                 */
             }
             composable(route = GimScreens.OnSet.name) {
-                val exerciseRutine: ExerciseRutine = viewModel.getNextExercise()
+                val exerciseRutine: ExerciseRutine = badViewModel.getNextExercise()
                 var trainingExercise: TrainingExercise by remember {
                     mutableStateOf(
                         TrainingExercise(
@@ -116,7 +133,7 @@ class GimAppController(
                         )
                     )
                 }
-                var remainingSets: Int by remember { mutableIntStateOf(viewModel.getRemainingSets()) }
+                var remainingSets: Int by remember { mutableIntStateOf(badViewModel.getRemainingSets()) }
                 var state: AddSetState by remember { mutableStateOf(updateAddSetState(trainingExercise)) }
                 var timerString: String by remember { mutableStateOf("00:00") }
                 var time: Int by remember { mutableIntStateOf(0) }
@@ -135,7 +152,7 @@ class GimAppController(
                 AddSet(
                     exerciseRutine = exerciseRutine,
                     trainingExercise = trainingExercise,
-                    lastExerciseSet = if (trainingExercise.sets.isNotEmpty()) trainingExercise.sets.last() else viewModel.getLastExerciseSet(exerciseRutine.exercise),
+                    lastExerciseSet = if (trainingExercise.sets.isNotEmpty()) trainingExercise.sets.last() else badViewModel.getLastExerciseSet(exerciseRutine.exercise),
                     timerValue = timerString,
                     state = state,
                     remainingSets = remainingSets,
@@ -147,7 +164,7 @@ class GimAppController(
                             message = { remaining -> "Se ha añadido correctamente\nFaltan ${remaining} series" }
                         )
                         state = updateAddSetState(trainingExercise)
-                        remainingSets = viewModel.getRemainingSets()
+                        remainingSets = badViewModel.getRemainingSets()
                         time = 0
                     },
                     onFailNext = {context -> showToast("Rellena los datos correctamente", context)},
@@ -158,18 +175,18 @@ class GimAppController(
                             message = {remaining -> "\"Se ha saltado la serio\nFaltan ${remaining} series\""}
                         )
                         state = updateAddSetState(trainingExercise)
-                        remainingSets = viewModel.getRemainingSets()
+                        remainingSets = badViewModel.getRemainingSets()
                     },
                     onPrevious = {
                         trainingExercise.sets.removeLast()
-                        viewModel.addRemainingSet()
+                        badViewModel.addRemainingSet()
                         state = updateAddSetState(trainingExercise)
-                        remainingSets = viewModel.getRemainingSets()
+                        remainingSets = badViewModel.getRemainingSets()
                     },
                     onAddSet = {
-                        viewModel.addRemainingSet()
+                        badViewModel.addRemainingSet()
                         state = updateAddSetState(trainingExercise)
-                        remainingSets = viewModel.getRemainingSets()
+                        remainingSets = badViewModel.getRemainingSets()
                     },
                     onInfoSelected = {}
                 )
@@ -180,11 +197,11 @@ class GimAppController(
                         if (!exerciseRutine.isReal()) {
                             showToast("Los datos no son válidos", context)
                         } else {
-                            viewModel.setNoRutineExerciseRutine(exerciseRutine)
+                            badViewModel.setNoRutineExerciseRutine(exerciseRutine)
                             navController.navigate(GimScreens.NextExercise.name)
                         }
                     },
-                    getExercises = { viewModel.getMuscleExercises(it) },
+                    getExercises = { badViewModel.getMuscleExercises(it) },
                     onAddExercise = { /*TODO*/ }
                 )
             }
@@ -193,7 +210,7 @@ class GimAppController(
                 var showDialogUpdateRutine by remember { mutableStateOf(false) }
                 var showDialogEndNoRutine by remember { mutableStateOf(false) }
                 EndRoutine(
-                    training = viewModel.getActualTraining(),
+                    training = badViewModel.getActualTraining(),
                     onExtraExercise = { navController.navigate(GimScreens.AddExerciseToTraining.name) },
                     onEndTraining = {
                         processEndTraining(
@@ -224,15 +241,40 @@ class GimAppController(
                     )
                 }
             }
+            composable(route = GimScreens.Historical.name) {
+                ShowHistorical(
+                    trainings = badViewModel.getAllTrainings(),
+                    onClickTraining = {
+                        badViewModel.setTrainingWatching(it)
+                        navController.navigate(GimScreens.SeeTraining.name)
+                    }
+                )
+            }
+            composable(route = GimScreens.SeeTraining.name) {
+                val context = LocalContext.current
+                val database = DatabaseProvider.getDatabase(context)
+                var exercises = emptyList<Exercise>()
+                CoroutineScope(Dispatchers.IO).launch {
+                    exercises = emptyList() // TODO
+                }
+                Text(
+                    "$exercises",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .fillMaxHeight()
+                        .padding(top = 300.dp)
+                )
+            }
         }
     }
 
     private fun nextExerciseInTraining(trainingExercise: TrainingExercise?) {
-        val last: Boolean = viewModel.isLastRutineExercie()
-        viewModel.setNextRutineExercise(trainingExercise)
+        val last: Boolean = badViewModel.isLastRutineExercie()
+        badViewModel.setNextRutineExercise(trainingExercise)
         if (last) {
-            if (viewModel.getActualTraining().exercises.isEmpty()) {
-                viewModel.setMenuMessage { onClick ->
+            if (badViewModel.getActualTraining().exercises.isEmpty()) {
+                badViewModel.setMenuMessage { onClick ->
                     MenuMessage(
                         message = "El entrenamiento esta vacio\nNo se ha guardado",
                         exit = onClick
@@ -245,7 +287,7 @@ class GimAppController(
             }
         } else {
             Log.d("DEBUGGING", "El else inferior")
-            viewModel.updateRutineToNextExercise()
+            badViewModel.updateRutineToNextExercise()
             navController.navigate(GimScreens.NextExercise.name)
         }
     }
@@ -255,7 +297,7 @@ class GimAppController(
             context: Context,
             message: (Int) -> String
     ) {
-        val remaining: Int = viewModel.setEndedSet()
+        val remaining: Int = badViewModel.setEndedSet()
         if (remaining == 0) {
             nextExerciseInTraining(trainingExercise)
         } else {
@@ -264,7 +306,7 @@ class GimAppController(
     }
 
     private fun updateAddSetState(trainingExercise: TrainingExercise): AddSetState {
-        var remaining: Int = viewModel.getRemainingSets()
+        var remaining: Int = badViewModel.getRemainingSets()
         if (remaining == 1 && trainingExercise.sets.size == 0) return AddSetState.Unique
         if (trainingExercise.sets.size == 0) return AddSetState.First
         if (remaining == 1) return AddSetState.Last
@@ -272,14 +314,14 @@ class GimAppController(
     }
 
     private fun processEndTraining( showChanges: () -> Unit, showNoRutine: () -> Unit ) {
-        val rutine: Rutine? = viewModel.getActualRutine()
-        val training: Training = viewModel.getActualTraining()
-        if (rutine == null) {
+        val routine: Routine? = badViewModel.getActualRutine()
+        val training: Training = badViewModel.getActualTraining()
+        if (routine == null) {
             showNoRutine()
         } else {
             // Case in a rutine, compare the rutine and the training
             var equal: Boolean = true
-            for (exerciseRutine in rutine.exercises) {
+            for (exerciseRutine in routine.exercises) {
                 // Buscamos el ejercicio en el entrenamiento que coincida con el de la rutina
                 val trainingExercise =
                     training.exercises.find { it.exercise.name == exerciseRutine.exercise.name }
@@ -290,8 +332,8 @@ class GimAppController(
                 }
             }
             if (equal) {
-                viewModel.saveTraining(training)
-                viewModel.setMenuMessage { onClick ->
+                badViewModel.saveTraining(training)
+                badViewModel.setMenuMessage { onClick ->
                     MenuMessage(
                         message = "El entrenamiento se ha guardado correctamente",
                         exit = onClick
