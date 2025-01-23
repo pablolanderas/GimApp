@@ -1,12 +1,13 @@
 package com.example.gimapp.views.addTraining
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -37,9 +38,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.gimapp.TrainViewModel
-import com.example.gimapp.components.Header
-import com.example.gimapp.domain.ExerciseRutine
+import com.example.gimapp.ui.viewModels.TrainingViewModel
+import com.example.gimapp.ui.views.components.Header
+import com.example.gimapp.data.database.DataBase
+import com.example.gimapp.data.database.daos.DaosDatabase_Impl
+import com.example.gimapp.domain.ExerciseRoutine
 import com.example.gimapp.domain.Routine
 import com.example.gimapp.ui.theme.GimAppTheme
 
@@ -149,14 +152,14 @@ fun DropListRutine(
 }
 
 @Composable
-fun ListExercisesRutine(routine: Routine?) {
-    val ejercicios = routine?.exercises ?: emptyList<ExerciseRutine>()
+fun ListExercisesRutine(routine: Routine?, modifier: Modifier = Modifier) {
+    val ejercicios = routine?.exercises ?: emptyList<ExerciseRoutine>()
     Column(
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier
     ) {
         Text(
             modifier = Modifier.padding(
-                vertical = 10.dp
+                bottom = 10.dp
             ),
             text = "Ejercicios:",
             style = MaterialTheme.typography.bodyLarge.copy(
@@ -169,8 +172,7 @@ fun ListExercisesRutine(routine: Routine?) {
                     color = MaterialTheme.colorScheme.primary,
                     shape = RoundedCornerShape(10.dp)
                 )
-                .fillMaxHeight(0.5f)
-                .fillMaxWidth()
+                .fillMaxSize()
         ){
             items(ejercicios) { ejercicio ->
                 Row(
@@ -207,13 +209,13 @@ fun ListExercisesRutine(routine: Routine?) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun SelectRoutine(
-    onRoutineSelected : () -> Unit,
-    viewModel: TrainViewModel
-) {
+fun SelectRoutine(viewModel: TrainingViewModel) {
     val selectedOption: Routine? by viewModel.routine.observeAsState(initial = null)
-    var selected: Boolean by remember { mutableStateOf(false) }
+    val selected: Boolean by viewModel.startedRoutine.observeAsState(initial = false)
+    val routines: List<Routine> by viewModel.routines.observeAsState(initial = emptyList())
+    viewModel.loadAllRoutines()
     Header() {
         Box(modifier = Modifier
             .fillMaxSize()
@@ -223,17 +225,28 @@ fun SelectRoutine(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.SpaceEvenly
             ){
+                val verticalMargin = 0.15f
+
+                Spacer(modifier = Modifier.weight(verticalMargin))
+
                 DropListRutine(
-                    options = viewModel.getAllRoutines(),
+                    options = routines,
                     selectedOption = selectedOption,
                     selected = selected,
                     optionSelected = {
                         viewModel.setRoutine(it)
-                        selected = true
+                        viewModel.setSelected()
                     }
                 )
 
-                ListExercisesRutine(selectedOption)
+                if (selectedOption != null)
+                    ListExercisesRutine(
+                        selectedOption,
+                        Modifier
+                            .weight(1f)
+                            .padding(vertical = 50.dp)
+                    )
+                else Spacer(modifier = Modifier.weight(1f))
 
                 Button(
                     modifier = Modifier
@@ -250,26 +263,25 @@ fun SelectRoutine(
                         disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                     ),
                     enabled = selected,
-                    onClick = {
-                        if (selected) {
-                            onRoutineSelected()
-                        }
-                    }
+                    onClick = { if (selected) viewModel.startRoutine() }
                 ){
                     Text(
                         text = "EMPEZAR",
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
+
+                Spacer(modifier = Modifier.weight(verticalMargin))
             }
         }
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showSystemUi = true)
 @Composable
 fun PreviewSelectRoutine() {
     GimAppTheme {
-        SelectRoutine({}, TrainViewModel())
+        SelectRoutine(TrainingViewModel(DataBase(DaosDatabase_Impl())))
     }
 }

@@ -1,4 +1,4 @@
-package com.example.gimapp.components
+package com.example.gimapp.ui.views.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

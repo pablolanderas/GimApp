@@ -1,7 +1,8 @@
 package com.example.gimapp.views.addTraining
 
-import android.content.Context
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -38,15 +39,15 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.gimapp.components.Header
+import com.example.gimapp.ui.views.components.Header
 import com.example.gimapp.domain.Exercise
-import com.example.gimapp.domain.ExerciseRutine
+import com.example.gimapp.domain.ExerciseRoutine
 import com.example.gimapp.domain.TrainingExercise
 import com.example.gimapp.ui.theme.GimAppTheme
 import com.example.gimapp.R
 import androidx.compose.material3.TextFieldDefaults.colors
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -58,11 +59,15 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.gimapp.ui.viewModels.TrainingViewModel
+import com.example.gimapp.data.database.DataBase
+import com.example.gimapp.data.database.daos.DaosDatabase_Impl
 import com.example.gimapp.domain.ExerciseSet
+import com.example.gimapp.domain.MuscularGroup
 
 @Composable
 fun TitleRow(
-    exerciseRutine: ExerciseRutine,
+    exerciseRoutine: ExerciseRoutine,
     onPressInfo: () -> Unit,
     onUnpressInfo: () -> Unit
 ) {
@@ -74,7 +79,7 @@ fun TitleRow(
     ) {
         Spacer(modifier = Modifier.size(20.dp))
         Text(
-            text = exerciseRutine.exercise.name.replaceFirstChar { it.uppercase() },
+            text = exerciseRoutine.exercise.name.replaceFirstChar { it.uppercase() },
             style = MaterialTheme.typography.titleLarge,
             color = Color.White,
             textAlign = TextAlign.Center,
@@ -441,48 +446,48 @@ enum class AddSetState {
     Unique
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AddSet(
-    exerciseRutine: ExerciseRutine,
-    trainingExercise: TrainingExercise,
-    remainingSets: Int,
-    timerValue: String,
-    state: AddSetState,
-    onNext: (Double, Int, Context) -> Unit,
-    onFailNext: (Context) -> Unit,
-    onSkip: (Context) -> Unit,
-    onPrevious: (Context) -> Unit,
-    onAddSet: () -> Unit,
-    onInfoSelected: () -> Unit,
-    lastExerciseSet: ExerciseSet? = null
+    viewModel: TrainingViewModel
 ) {
     val context = LocalContext.current
-    val weightValue: MutableState<String> = remember {
-        mutableStateOf(
-            lastExerciseSet?.weight?.let { if (it % 1.0 == 0.0) it.toInt().toString() else it.toString() } ?: ""
-        )
+    val lastExerciseSet = viewModel.getActualExcerciseRutineLastExerciseSet()
+    var weightValue: String by remember {
+        mutableStateOf(lastExerciseSet?.weight
+                        ?.let {
+                            if (it % 1.0 == 0.0) it.toInt().toString()
+                            else it.toString()
+                        } ?: "")
     }
-    val repsValue: MutableState<String> = remember { mutableStateOf(lastExerciseSet?.reps?.toString() ?: "") }
+    var repsValue: String by remember { mutableStateOf(lastExerciseSet?.reps?.toString() ?: "") }
+    val timerValue: String by viewModel.timer.observeAsState(initial = "00:00")
+    val remainingSets: Int by viewModel.remainingExerciseSets.observeAsState(initial = 0)
+    val trainingExercise: TrainingExercise by viewModel.actualTrainingExercise.observeAsState(
+        initial = TrainingExercise(Exercise("","",MuscularGroup.Abs), null, mutableListOf<ExerciseSet>())
+    )
+    val state: AddSetState by viewModel.stateOfAddSet.observeAsState(initial = AddSetState.Normal)
+    viewModel.startTimer()
     Header(
         verticalArrangement = Arrangement.SpaceEvenly,
     ) {
         var showDialog by remember { mutableStateOf(false) }
         if (showDialog)
             InfoDialog(
-                exercise = exerciseRutine.exercise
+                exercise = viewModel.getActualExerciseRoutine().exercise
             )
         TitleRow(
-            exerciseRutine,
+            viewModel.getActualExerciseRoutine(),
             onPressInfo = { showDialog = true },
             onUnpressInfo = { showDialog = false }
         )
         Spacer(modifier = Modifier.weight(1f))
         WeightAndRepsSelecter(
             modifier = Modifier.padding(horizontal = 20.dp),
-            weightValue = weightValue.value,
-            repsValue = repsValue.value,
-            onValueChangeWeight = { weightValue.value = it },
-            onValueChangeReps = { repsValue.value = it }
+            weightValue = weightValue,
+            repsValue = repsValue,
+            onValueChangeWeight = { weightValue = it },
+            onValueChangeReps = { repsValue = it }
         )
         Spacer(modifier = Modifier.weight(0.3f))
         Row(
@@ -512,14 +517,7 @@ fun AddSet(
         ) {
             Spacer(modifier = Modifier.weight(1f))
             Button(
-                onClick = {
-                    val weight: Double? = weightValue.value.toDoubleOrNull()
-                    val reps: Int? = repsValue.value.toIntOrNull()
-                    if (weight != null && reps != null)
-                        onNext(weight, reps, context)
-                    else
-                        onFailNext(context)
-                },
+                onClick = { viewModel.tringToAddSet(weightValue, repsValue, context) },
                 modifier = Modifier
                     .background(
                         color = MaterialTheme.colorScheme.primary,
@@ -537,13 +535,14 @@ fun AddSet(
         NavigateButtons(
             modifier = Modifier.padding(horizontal = 20.dp),
             state = state,
-            onSkip = { onSkip(context) },
-            onPrevious = { onPrevious(context) },
-            onAddSet = { onAddSet() }
+            onSkip = { viewModel.skipAddSet(context) },
+            onPrevious = { viewModel.previusSet() },
+            onAddSet = { viewModel.addExtraSet() }
         )
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showSystemUi = true)
 @Composable
 fun PrevieAddSet() {
@@ -553,28 +552,7 @@ fun PrevieAddSet() {
                 exercise = Exercise("press banca", "con banca", imgURI = R.drawable.press_banca)
             )
         }
-        AddSet(
-            exerciseRutine = ExerciseRutine(
-                exercise = Exercise("press banca", "con banca"),
-                sets = 4,
-                minReps = 8,
-                maxReps = 10
-            ),
-            trainingExercise = TrainingExercise(
-                exercise = Exercise("press banca", "con banca"),
-                date = null,
-                sets = mutableListOf(ExerciseSet(40.0, 8, 0), ExerciseSet(40.0, 8, 0))
-            ),
-            remainingSets = 2,
-            timerValue = "00:30",
-            state = AddSetState.Unique,
-            onNext = { s1, s2, s3 -> {} },
-            onFailNext = {},
-            onSkip = {},
-            onPrevious = {},
-            onAddSet = {},
-            onInfoSelected = {}
-        )
+        AddSet(TrainingViewModel(DataBase(DaosDatabase_Impl())))
     }
 }
 

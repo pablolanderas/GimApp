@@ -12,11 +12,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.gimapp.components.Header
+import com.example.gimapp.ui.viewModels.TrainingViewModel
+import com.example.gimapp.ui.views.components.Header
+import com.example.gimapp.data.database.DataBase
+import com.example.gimapp.data.database.daos.DaosDatabase_Impl
 import com.example.gimapp.ui.theme.GimAppTheme
+import com.example.gimapp.ui.views.GimScreens
 
 @Composable
 fun MenuButton(
@@ -46,19 +50,23 @@ fun MenuButton(
 }
 
 @Composable
-fun MainMenu(
-    onNewTrainClicked: () -> Unit,
-    onHistoricalClicked: () -> Unit
-) {
+fun MainMenu(viewModel: TrainingViewModel) {
+    val context = LocalContext.current
     Header(
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        MenuButton(text = "Nuevo entrenamiento", onClicked = onNewTrainClicked)
-        MenuButton(text = "Historial", onClicked = onHistoricalClicked)
+        MenuButton(text = "Nuevo entrenamiento", onClicked = {
+            viewModel.startNewTraining()
+        })
+        MenuButton(text = "Historial", onClicked = {
+            viewModel.navigateTo(GimScreens.Historical)
+        })
         MenuButton(text = "Rutinas")
         MenuButton(text = "Ejercicios")
-        MenuButton(text = "Ajustes")
+        MenuButton(text = "Ajustes" ) {
+            viewModel.borrar(context)
+        }
     }
 }
 
@@ -66,6 +74,6 @@ fun MainMenu(
 @Composable
 fun PreviewPaginaInicio() {
     GimAppTheme {
-        MainMenu({}, {})
+        MainMenu(TrainingViewModel(DataBase(DaosDatabase_Impl())))
     }
 }

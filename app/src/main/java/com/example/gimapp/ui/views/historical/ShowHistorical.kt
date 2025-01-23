@@ -1,5 +1,7 @@
 package com.example.gimapp.views.historical
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,19 +16,24 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.gimapp.components.Header
-import com.example.gimapp.data.createSampleTraining
+import com.example.gimapp.data.database.DataBase
+import com.example.gimapp.ui.views.components.Header
+import com.example.gimapp.data.database.daos.DaosDatabase_Impl
 import com.example.gimapp.domain.Training
 import com.example.gimapp.ui.theme.GimAppTheme
+import com.example.gimapp.ui.viewModels.HistoricalViewModel
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HistoricalElement(
     training: Training,
@@ -59,7 +66,7 @@ fun HistoricalElement(
             Text(
                 text = (
                         training.routine?.name?.replaceFirstChar { it.uppercase() } ?: "Entrenamiento sin rutina"
-                        ) + if (training.modifiedRutine) " (Modificada)" else "",
+                        ) + if (training.modifiedRoutine) " (Modificada)" else "",
                 style = MaterialTheme.typography.bodyLarge.copy(
                     color = Color.White
                 ),
@@ -94,6 +101,7 @@ fun HistoricalElement(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HistoricalLayout(
     trainings: List<Training>,
@@ -113,11 +121,13 @@ fun HistoricalLayout(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ShowHistorical(
-    trainings: List<Training>,
-    onClickTraining: (Training) -> Unit
+    viewModel: HistoricalViewModel
 ){
+    val trainings by viewModel.trainings.observeAsState(initial = emptyList())
+    viewModel.updateTrainings()
     Header(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -132,7 +142,7 @@ fun ShowHistorical(
         )
         HistoricalLayout(
             trainings = trainings,
-            onClickTraining = onClickTraining,
+            onClickTraining = {  },
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
@@ -142,17 +152,13 @@ fun ShowHistorical(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showSystemUi = true)
 @Composable
 fun PrevieShowHistorical() {
     GimAppTheme {
         ShowHistorical(
-            listOf(
-                createSampleTraining(),
-                createSampleTraining(),
-                createSampleTraining(),
-                createSampleTraining()
-            ), {}
+            HistoricalViewModel(DataBase(DaosDatabase_Impl()))
         )
         //HistoricalElement(createSampleTraining())
     }

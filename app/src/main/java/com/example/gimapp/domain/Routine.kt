@@ -23,11 +23,12 @@ class Exercise(
     val name: String,
     val mode: String,
     val muscle: MuscularGroup = MuscularGroup.Chest,
-    val imgURI: Int? = null
+    val imgURI: Int? = null,
+    var id: Long = 0
 )
 
-class ExerciseRutine(
-    val exercise: Exercise,
+class ExerciseRoutine(
+    var exercise: Exercise,
     val sets: Int,
     val minReps: Int,
     val maxReps: Int
@@ -39,7 +40,8 @@ class ExerciseRutine(
 
 class Routine(
     val name: String,
-    val exercises: MutableList<ExerciseRutine>
+    val exercises: MutableList<ExerciseRoutine>,
+    var id: Long = 0
 )
 
 class ExerciseSet(
@@ -57,6 +59,7 @@ class TrainingExercise(
 class Training(
     val date: LocalDate,
     val exercises: MutableList<TrainingExercise>,
-    val routine: Routine?,
-    val modifiedRutine: Boolean
+    var routine: Routine?,
+    var modifiedRoutine: Boolean,
+    var id: Long = 0
 )

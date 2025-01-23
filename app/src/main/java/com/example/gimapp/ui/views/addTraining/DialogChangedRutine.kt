@@ -17,22 +17,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.example.gimapp.ui.viewModels.TrainingViewModel
+import com.example.gimapp.data.database.DataBase
+import com.example.gimapp.data.database.daos.DaosDatabase_Impl
 import com.example.gimapp.ui.theme.GimAppTheme
 
 @Composable
-fun DialogChangedRutine(
-    onUpdate: () -> Unit,
-    onCreate: () -> Unit,
-    onNoRegister: () -> Unit,
-    onExit: () -> Unit
-) {
-    Dialog(onDismissRequest = { onExit() }) {
+fun DialogChangedRoutine(viewModel: TrainingViewModel) {
+    Dialog(onDismissRequest = { viewModel.closeChangedRutineDialog() }) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -62,7 +59,7 @@ fun DialogChangedRutine(
             )
             Row {
                 Button(
-                    onClick = onUpdate,
+                    onClick = { viewModel.saveRoutineModification() },
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = 5.dp),
@@ -73,9 +70,10 @@ fun DialogChangedRutine(
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text(
-                        text = "Modificar",
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            color = Color.White
+                        text = "Modificación",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
                         ),
                         textAlign = TextAlign.Center,
                         modifier = Modifier
@@ -84,7 +82,7 @@ fun DialogChangedRutine(
                     )
                 }
                 Button(
-                    onClick = onCreate,
+                    onClick = { viewModel.tryToCreateNewRoutine() },
                     modifier = Modifier
                         .weight(1f)
                         .padding(start = 5.dp),
@@ -96,8 +94,9 @@ fun DialogChangedRutine(
                 ) {
                     Text(
                         text = "Nueva",
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            color = Color.White
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
                         ),
                         textAlign = TextAlign.Center,
                         modifier = Modifier
@@ -107,7 +106,7 @@ fun DialogChangedRutine(
                 }
             }
             Button(
-                onClick = onNoRegister,
+                onClick = { viewModel.saveTrainWithoutRoutine() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 10.dp),
@@ -136,8 +135,6 @@ fun DialogChangedRutine(
 fun PreviewDialogChangedRutine() {
     GimAppTheme {
         Spacer(modifier = Modifier.fillMaxSize())
-        DialogChangedRutine(
-            { }, { }, { }, { }
-        )
+        DialogChangedRoutine(TrainingViewModel(DataBase(DaosDatabase_Impl())))
     }
 }

@@ -17,6 +17,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,13 +26,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.gimapp.R
-import com.example.gimapp.components.Header
-import com.example.gimapp.domain.Exercise
-import com.example.gimapp.domain.ExerciseSet
+import com.example.gimapp.ui.viewModels.TrainingViewModel
+import com.example.gimapp.ui.views.components.Header
+import com.example.gimapp.data.database.DataBase
+import com.example.gimapp.data.database.daos.DaosDatabase_Impl
 import com.example.gimapp.domain.Training
 import com.example.gimapp.domain.TrainingExercise
 import com.example.gimapp.ui.theme.GimAppTheme
+import com.example.gimapp.ui.views.GimScreens
 import java.time.LocalDate
 
 @Composable
@@ -80,12 +83,15 @@ fun ExercisesViwer(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
+val NULL_TRAIN = Training(LocalDate.of(2024, 8, 8), mutableListOf<TrainingExercise>(), null, false)
+
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun EndRoutine(
-    training: Training,
-    onExtraExercise: () -> Unit,
-    onEndTraining: () -> Unit
+    viewModel: TrainingViewModel
 ) {
+    val training: Training by viewModel.training.observeAsState(initial = NULL_TRAIN)
     Header(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -119,7 +125,7 @@ fun EndRoutine(
                 .weight(1f)
         ) {
             Button(
-                onClick = onExtraExercise,
+                onClick = { viewModel.navigateTo(GimScreens.AddExerciseToTraining) },
                 modifier = Modifier
                     .align(Alignment.Center),
                 colors = ButtonDefaults.buttonColors(
@@ -141,7 +147,7 @@ fun EndRoutine(
                 .weight(1f)
         ) {
             Button(
-                onClick = onEndTraining,
+                onClick = { viewModel.tryToEndActualTraining() },
                 modifier = Modifier
                     .align(Alignment.Center),
                 colors = ButtonDefaults.buttonColors(
@@ -168,37 +174,8 @@ fun EndRoutine(
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview(showSystemUi = true)
 @Composable
-fun PrevieEndRoutine() {
+fun PreviewEndRoutine() {
     GimAppTheme {
-        EndRoutine(training =
-            Training(LocalDate.now(),
-                mutableListOf(
-                    TrainingExercise(
-                        exercise = Exercise("press banca", "normal", imgURI = R.drawable.press_banca),
-                        date = LocalDate.of(2024, 8, 13),
-                        sets = mutableListOf(
-                            ExerciseSet(weight = 70.0, reps = 10, effort = 2),
-                            ExerciseSet(weight = 70.0, reps = 10, effort = 2),
-                            ExerciseSet(weight = 70.0, reps = 10, effort = 2),
-                            ExerciseSet(weight = 70.0, reps = 10, effort = 2)
-                        ),
-                    ),
-                    TrainingExercise(
-                        exercise = Exercise("press inclinado", "normal", imgURI = R.drawable.press_banca),
-                        date = LocalDate.of(2024, 8, 13),
-                        sets = mutableListOf(
-                            ExerciseSet(weight = 70.0, reps = 10, effort = 2),
-                            ExerciseSet(weight = 70.0, reps = 10, effort = 2),
-                            ExerciseSet(weight = 70.0, reps = 10, effort = 2),
-                            ExerciseSet(weight = 70.0, reps = 10, effort = 2)
-                        )
-                    )
-                ),
-                routine = null,
-                modifiedRutine = true
-            ),
-            onEndTraining = {},
-            onExtraExercise = {}
-        )
+        EndRoutine( viewModel = TrainingViewModel(DataBase(DaosDatabase_Impl())))
     }
 }

@@ -1,12 +1,8 @@
 package com.example.gimapp.views.addTraining
 
-import android.content.Context
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,25 +23,24 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.gimapp.components.Header
-import com.example.gimapp.data.ejerciciosPrueba
+import com.example.gimapp.ui.viewModels.TrainingViewModel
+import com.example.gimapp.ui.views.components.Header
+import com.example.gimapp.data.database.DataBase
+import com.example.gimapp.data.database.daos.DaosDatabase_Impl
 import com.example.gimapp.domain.Exercise
-import com.example.gimapp.domain.ExerciseRutine
 import com.example.gimapp.domain.MuscularGroup
 import com.example.gimapp.ui.theme.GimAppTheme
+import com.example.gimapp.ui.views.GimScreens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -186,25 +181,23 @@ fun ExerciseSelector(
 
 @Composable
 fun AddExerciseToTraining(
-    onContinue: (ExerciseRutine, Context) -> Unit,
-    getExercises: (MuscularGroup) -> List<Exercise>,
-    onAddExercise: () -> Unit
+    viewModel: TrainingViewModel
 ) {
     Header(
         verticalArrangement = Arrangement.SpaceEvenly
     ) {
         var musucarGroup: MuscularGroup? by remember { mutableStateOf(null) }
         var exercise: Exercise? by remember { mutableStateOf(null) }
-        var exerciseList = musucarGroup?.let { getExercises(it) } ?: emptyList()
         var showDialog: Boolean by remember { mutableStateOf(false) }
-        val context: Context = LocalContext.current
+        val exerciseList by viewModel.exercises.observeAsState(initial=emptyList())
         if (showDialog) {
             DialogSetExerciseRutineToTraining (
                 exercise = exercise ?: throw Error("The exercise is not selected and the dialog was called"),
-                onSelected = {
-                    onContinue(it, context)
+                viewModel = viewModel,
+                goNextExercise = {
+                    viewModel.navigateTo(GimScreens.NextExercise)
                     showDialog = false
-                    },
+                },
                 onExit = { showDialog = false }
             )
         }
@@ -225,6 +218,7 @@ fun AddExerciseToTraining(
                 ),
             selectedOption = musucarGroup,
             optionSelected = {
+                viewModel.updateMuscleExercises(it)
                 musucarGroup = it
             },
         )
@@ -240,7 +234,7 @@ fun AddExerciseToTraining(
                 exercise = it
                 showDialog = true
             },
-            onAddExercise = onAddExercise
+            onAddExercise = { viewModel.navigateTo(GimScreens.AddExercise) }
         )
         Spacer(modifier = Modifier.height(50.dp))
     }
@@ -251,10 +245,6 @@ fun AddExerciseToTraining(
 @Composable
 fun PreviewAddExerciseToTraining() {
     GimAppTheme {
-        AddExerciseToTraining(
-            onContinue = { _, _ -> },
-            getExercises = { ejerciciosPrueba },
-            onAddExercise = {}
-        )
+        AddExerciseToTraining(TrainingViewModel(DataBase(DaosDatabase_Impl())))
     }
 }

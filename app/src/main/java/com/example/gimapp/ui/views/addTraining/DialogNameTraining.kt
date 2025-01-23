@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults.colors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -27,8 +28,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -36,15 +35,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.example.gimapp.ui.viewModels.TrainingViewModel
+import com.example.gimapp.data.database.DataBase
+import com.example.gimapp.data.database.daos.DaosDatabase_Impl
 import com.example.gimapp.ui.theme.GimAppTheme
 
 @Composable
-fun DialogNameTraining(
-    onSaveTraining: (String) -> Unit,
-    onSaveRutine: (String) -> Unit,
-    onExit: () -> Unit
-) {
-    Dialog(onDismissRequest = { onExit() }) {
+fun DialogNameTraining(viewModel: TrainingViewModel) {
+    val showSaveWithoutName: Boolean by viewModel.showSaveWithoutName.observeAsState(initial = true)
+    Dialog(onDismissRequest = { viewModel.closeNoRoutineDialog() }) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -91,29 +90,31 @@ fun DialogNameTraining(
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
             )
-            Button(
-                onClick = { onSaveTraining(text) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 15.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = Color.White
-                ),
-                shape = RoundedCornerShape(10.dp)
-            ) {
-                Text(
-                    text = if (text.equals("")) "Guardar como entrenamiento sin nombre" else "Guardar entrenamiento",
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        color = Color.White
-                    ),
-                    textAlign = TextAlign.Center,
+            if (showSaveWithoutName) {
+                Button(
+                    onClick = { viewModel.saveTrainWithoutRoutine() },
                     modifier = Modifier
-                        .padding(vertical = 5.dp)
-                )
+                        .fillMaxWidth()
+                        .padding(top = 15.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text(
+                        text = if (text == "") "Guardar como entrenamiento sin nombre" else "Guardar entrenamiento",
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            color = Color.White
+                        ),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .padding(vertical = 5.dp)
+                    )
+                }
             }
             Button(
-                onClick = { if (text != "") onSaveRutine(text) },
+                onClick = { viewModel.createNewRoutine(text) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 15.dp),
@@ -142,8 +143,6 @@ fun DialogNameTraining(
 fun PreviewDialogNameTraining() {
     GimAppTheme {
         Spacer(modifier = Modifier.fillMaxSize())
-        DialogNameTraining (
-            { }, { }, { }
-        )
+        DialogNameTraining (TrainingViewModel(DataBase(DaosDatabase_Impl())))
     }
 }

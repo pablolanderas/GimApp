@@ -24,6 +24,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -32,11 +34,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.gimapp.R
-import com.example.gimapp.TrainViewModel
-import com.example.gimapp.components.Header
-import com.example.gimapp.domain.ExerciseRutine
+import com.example.gimapp.ui.viewModels.TrainingViewModel
+import com.example.gimapp.ui.views.components.Header
+import com.example.gimapp.data.database.DataBase
+import com.example.gimapp.data.database.daos.DaosDatabase_Impl
+import com.example.gimapp.domain.ExerciseRoutine
 import com.example.gimapp.domain.TrainingExercise
 import com.example.gimapp.ui.theme.GimAppTheme
+import com.example.gimapp.ui.views.GimScreens
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -70,7 +75,7 @@ fun InfoBar(
 @SuppressLint("DefaultLocale")
 @Composable
 fun ExerciseInfo(
-    exerciseRutine: ExerciseRutine,
+    exerciseRoutine: ExerciseRoutine,
     weight: Double,
     addWeight: Boolean,
     removeWeight: Boolean
@@ -84,7 +89,7 @@ fun ExerciseInfo(
             )
     ){
         Text(
-            text = exerciseRutine.exercise.name.replaceFirstChar { it.uppercase() },
+            text = exerciseRoutine.exercise.name.replaceFirstChar { it.uppercase() },
             style = MaterialTheme.typography.titleLarge,
             color = Color.White,
             textAlign = TextAlign.Center,
@@ -102,7 +107,7 @@ fun ExerciseInfo(
         ){
             InfoBar(
                 title = "Modo:",
-                value = exerciseRutine.exercise.mode.replaceFirstChar { it.uppercase() },
+                value = exerciseRoutine.exercise.mode.replaceFirstChar { it.uppercase() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
@@ -113,7 +118,7 @@ fun ExerciseInfo(
             )
             InfoBar(
                 title = "Series:",
-                value = "x${exerciseRutine.sets}",
+                value = "x${exerciseRoutine.sets}",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
@@ -124,7 +129,7 @@ fun ExerciseInfo(
             )
             InfoBar(
                 title = "Repeticiones:",
-                value = "${exerciseRutine.minReps}-${exerciseRutine.maxReps}",
+                value = "${exerciseRoutine.minReps}-${exerciseRoutine.maxReps}",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
@@ -232,14 +237,10 @@ fun ExerciseHistorical(historical: List<TrainingExercise>) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun NextExercise(
-    viewModel: TrainViewModel,
-    onOtherExercise: () -> Unit,
-    onStartExercise: () -> Unit,
-    onAddExercise: () -> Unit,
-    onEndRoutine: () -> Unit
-) {
-    val exerciseRoutine: ExerciseRutine = viewModel.getActualExerciseRoutineNoNullable()
+fun NextExercise(viewModel: TrainingViewModel) {
+    val exerciseRoutine: ExerciseRoutine = viewModel.getActualExerciseRoutine()
+    val exerciseHistorical: List<TrainingExercise> by viewModel.historical.observeAsState(initial = emptyList())
+    viewModel.updateExerciseHistorical()
     Header(
         verticalArrangement = Arrangement.SpaceEvenly,
     ) {
@@ -256,7 +257,7 @@ fun NextExercise(
 
             )
             ExerciseInfo(
-                exerciseRutine = exerciseRoutine,
+                exerciseRoutine = exerciseRoutine,
                 weight = 70.0,
                 addWeight = true,
                 removeWeight = false)
@@ -266,15 +267,13 @@ fun NextExercise(
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(top = 25.dp, bottom = 15.dp)
             )
-            ExerciseHistorical(
-                viewModel.getExerciseHistorical(exerciseRoutine.exercise)
-            )
+            ExerciseHistorical(exerciseHistorical)
             Row(modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 20.dp)) {
                 Spacer(modifier = Modifier.weight(1F))
                 Button(
-                    onClick = onStartExercise,
+                    onClick = { viewModel.startActualExerciseRoutine() },
                     modifier = Modifier
                         .background(
                             color = MaterialTheme.colorScheme.primary,
@@ -295,7 +294,7 @@ fun NextExercise(
                 .fillMaxWidth()
                 .padding(bottom = 25.dp)) {
                 Button(
-                    onClick = onAddExercise,
+                    onClick = { viewModel.navigateTo(GimScreens.AddExerciseToTraining) },
                     modifier = Modifier
                         .weight(0.2f)
                         .border(
@@ -319,9 +318,7 @@ fun NextExercise(
                 }
                 Spacer(modifier = Modifier.weight(0.3f))
                 Button(
-                    onClick = {
-                        viewModel.skipActualExerciseRoutine(onOtherExercise, onEndRoutine)
-                    },
+                    onClick = { viewModel.goNextExerciseInTraining() },
                     modifier = Modifier
                         .weight(0.2f)
                         .border(
@@ -351,14 +348,10 @@ fun NextExercise(
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview(showSystemUi = true)
 @Composable
-fun PrevieNextEjercicio() {
+fun PreviewNextEjercicio() {
     GimAppTheme {
         NextExercise(
-            TrainViewModel(),
-            onOtherExercise = {},
-            onStartExercise = {},
-            onAddExercise = {},
-            onEndRoutine = {}
+            TrainingViewModel(DataBase(DaosDatabase_Impl()))
         )
     }
 }

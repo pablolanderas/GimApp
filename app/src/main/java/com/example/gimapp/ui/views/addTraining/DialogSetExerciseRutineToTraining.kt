@@ -1,7 +1,6 @@
 package com.example.gimapp.views.addTraining
 
-import android.health.connect.datatypes.units.Length
-import android.util.Log
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,20 +26,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.example.gimapp.ui.viewModels.TrainingViewModel
+import com.example.gimapp.data.database.DataBase
+import com.example.gimapp.data.database.daos.DaosDatabase_Impl
 import com.example.gimapp.domain.Exercise
-import com.example.gimapp.domain.ExerciseRutine
+import com.example.gimapp.domain.ExerciseRoutine
 import com.example.gimapp.ui.theme.GimAppTheme
 
 @Composable
@@ -167,7 +168,8 @@ fun RepsSelector(
 @Composable
 fun DialogSetExerciseRutineToTraining(
     exercise: Exercise,
-    onSelected: (ExerciseRutine) -> Unit,
+    viewModel: TrainingViewModel,
+    goNextExercise: () -> Unit,
     onExit: () -> Unit
 ) {
     val focusMinRep = remember { FocusRequester() }
@@ -210,10 +212,15 @@ fun DialogSetExerciseRutineToTraining(
                 modifier = Modifier
                     .padding(top = 20.dp)
             )
+            val context: Context = LocalContext.current
             Button(
                 onClick = {
                     if (numSets != null && minReps != null && maxReps != null)
-                        onSelected(ExerciseRutine(exercise, numSets!!, minReps!!, maxReps!!))
+                        viewModel.setOtherActualExerciseRoutine(
+                            e = ExerciseRoutine(exercise, numSets!!, minReps!!, maxReps!!),
+                            goNextExercise = goNextExercise,
+                            context = context
+                        )
                 },
                 shape = RoundedCornerShape(20), // Hace el botón redondo
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
@@ -239,6 +246,7 @@ fun PreviewDialogSetExerciseRutineToTraining() {
         Spacer(modifier = Modifier.fillMaxSize())
         DialogSetExerciseRutineToTraining (
             Exercise("press banca", "si"),
+            TrainingViewModel(DataBase(DaosDatabase_Impl())),
             {},
             {}
         )

@@ -8,12 +8,12 @@ plugins {
 
 android {
     namespace = "com.example.gimapp"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.gimapp"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -64,17 +64,16 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.material)
-    implementation("androidx.navigation:navigation-compose:2.7.3")
-
-    // Añadido para Room
-    implementation("androidx.room:room-runtime:2.5.1")
-    implementation("androidx.room:room-ktx:2.5.1")
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.runtime.livedata)
-    kapt("androidx.room:room-compiler:2.5.1")
 
     // Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
+
+    // Room
+    implementation(libs.androidx.room.ktx)
+    kapt(libs.androidx.room.compiler)
 
     // Tests
     testImplementation(libs.junit)
