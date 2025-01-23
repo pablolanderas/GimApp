@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gimapp.data.database.DataBase
 import com.example.gimapp.domain.Training
+import com.example.gimapp.ui.views.GimScreens
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,11 +18,30 @@ class HistoricalViewModel @Inject constructor(
 
     private val _trainings = MutableLiveData<List<Training>>()
     val trainings: LiveData<List<Training>> = _trainings
+    private val _selectedTraining = MutableLiveData<Training>()
+    val selectedTraining: LiveData<Training> = _selectedTraining
 
     fun updateTrainings() {
         viewModelScope.launch {
             _trainings.value = db.getAllTrainings()
         }
+    }
+
+    fun selectTraining(t: Training) {
+        _selectedTraining.value = t
+        navigateTo(GimScreens.SeeTraining)
+    }
+
+    private var navigateObjetc: ((String) -> Unit)? = null
+
+    fun setNavigate(f: (String) -> Unit) {
+        navigateObjetc = f
+    }
+
+    // Navigate function
+    fun navigateTo(screen: GimScreens) {
+        navigateObjetc?.invoke(screen.name)
+            ?: throw Exception("No se ha inicializado la navegacion")
     }
 
 }

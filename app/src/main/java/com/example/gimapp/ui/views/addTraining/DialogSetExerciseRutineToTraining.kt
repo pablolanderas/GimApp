@@ -13,14 +13,23 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TextFieldDefaults.colors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -35,7 +44,9 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -175,6 +186,100 @@ fun RepsSelector(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ModeSelector(
+    selectedOption: String,
+    options: List<String>,
+    optionSelected: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Text(
+            text = "Modo:",
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier
+                .align(Alignment.CenterVertically)
+                .padding(end = 10.dp)
+        )
+        ExposedDropdownMenuBox(
+            modifier = Modifier
+                .background(
+                    color = Color(0x00000000),
+                    shape = RoundedCornerShape(16.dp)
+                ),
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded }
+        ) {
+            TextField(
+                value = selectedOption.replaceFirstChar { it.uppercase() },
+                onValueChange = {}, // Aunque sea de solo lectura, necesitas pasar una lambda vacia
+                readOnly = true,
+                textStyle = MaterialTheme.typography.bodySmall.copy(
+                    color = Color.White,
+                    textAlign = TextAlign.Left
+                ),
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowDropDown,
+                        contentDescription = "Dropdown icon",
+                        tint = Color.White
+                    )
+                },
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.secondary,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.secondary,
+                    disabledContainerColor = MaterialTheme.colorScheme.secondary,
+                ),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor()
+                    .background(
+                        color = Color(0x00000000),
+                        shape = RoundedCornerShape(16.dp)
+                    ),
+                maxLines = 1,
+                singleLine = true,
+                visualTransformation = VisualTransformation.None
+            )
+
+            // Crear el menú desplegable
+            ExposedDropdownMenu(
+                modifier = Modifier
+                    .background(
+                        color = Color(0x00FF0000),
+                        shape = RoundedCornerShape(16.dp)
+                    ),
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = option,
+                                textAlign = TextAlign.Start,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        },
+                        onClick = {
+                            optionSelected(option)
+                            expanded = false
+                        },
+                    )
+                }
+            }
+        }
+    }
+}
+
 @Composable
 fun DialogSetExerciseRutineToTraining(
     exercise: Exercise,
@@ -187,6 +292,9 @@ fun DialogSetExerciseRutineToTraining(
     var numSets: Int? by remember { mutableStateOf(null) }
     var minReps: Int? by remember { mutableStateOf(null) }
     var maxReps: Int? by remember { mutableStateOf(null) }
+    var selected: String by remember { mutableStateOf("") }
+    val modes by viewModel.modes.observeAsState(initial=emptyList())
+    viewModel.updateModesList(exercise)
     Dialog(onDismissRequest = { onExit() } ) {
         Column(
             modifier = Modifier
@@ -204,6 +312,13 @@ fun DialogSetExerciseRutineToTraining(
                 style = MaterialTheme.typography.titleLarge,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
+            )
+            ModeSelector(
+                selectedOption = selected,
+                options = modes,
+                optionSelected = { selected = it },
+                modifier = Modifier
+                    .padding(top = 20.dp)
             )
             DataAdder(
                 description = "Número de series:",
@@ -223,9 +338,10 @@ fun DialogSetExerciseRutineToTraining(
             val context: Context = LocalContext.current
             Button(
                 onClick = {
-                    if (numSets != null && minReps != null && maxReps != null)
+                    if (numSets != null && minReps != null && maxReps != null && selected != "")
                         viewModel.setOtherActualExerciseRoutine(
                             e = ExerciseRoutine(exercise, numSets!!, minReps!!, maxReps!!),
+                            mode = selected,
                             goNextExercise = goNextExercise,
                             context = context
                         )

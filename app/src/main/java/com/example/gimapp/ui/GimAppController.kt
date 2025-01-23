@@ -23,8 +23,10 @@ import androidx.navigation.compose.rememberNavController
 import com.example.gimapp.ui.viewModels.AppViewModel
 import com.example.gimapp.ui.viewModels.TrainingViewModel
 import com.example.gimapp.domain.Exercise
+import com.example.gimapp.ui.viewModels.ExercisesViewModel
 import com.example.gimapp.ui.viewModels.HistoricalViewModel
 import com.example.gimapp.ui.views.GimScreens
+import com.example.gimapp.ui.views.exercises.SeeExercises
 import com.example.gimapp.views.addTraining.AddExerciseToTraining
 import com.example.gimapp.views.addTraining.AddSet
 import com.example.gimapp.views.addTraining.DialogChangedRoutine
@@ -41,7 +43,7 @@ import kotlinx.coroutines.launch
 class GimAppController(
     private val trainingViewModel: TrainingViewModel,
     private val historicalViewModel: HistoricalViewModel,
-    private val badViewModel: AppViewModel = AppViewModel(),
+    private val exercisesViewModel: ExercisesViewModel,
 ) {
 
     private lateinit var navController: NavHostController
@@ -52,6 +54,7 @@ class GimAppController(
     fun StartApp() {
         navController = rememberNavController()
         trainingViewModel.setNavigate { navController.navigate(it) }
+        historicalViewModel.setNavigate { navController.navigate(it) }
         NavHost(
             navController = navController,
             startDestination = GimScreens.Start.name
@@ -87,16 +90,7 @@ class GimAppController(
                 if (showDialogEndNoRutine) DialogNameTraining(viewModel = trainingViewModel)
             }
             composable(route = GimScreens.Historical.name) {
-                ShowHistorical(
-                    historicalViewModel
-                )
-                /*
-                trainings = badViewModel.getAllTrainings(),
-                onClickTraining = {
-                    badViewModel.setTrainingWatching(it)
-                    navController.navigate(GimScreens.SeeTraining.name)
-                }
-                 */
+                ShowHistorical(historicalViewModel)
             }
             composable(route = GimScreens.SeeTraining.name) {
                 var exercises = emptyList<Exercise>()
@@ -114,6 +108,9 @@ class GimAppController(
             }
             composable(route = GimScreens.AddExercise.name) {
                 Text(text = "NUEVO ENTRENAMIENTO")
+            }
+            composable(route = GimScreens.SeeExercises.name) {
+                SeeExercises(exercisesViewModel)
             }
         }
     }

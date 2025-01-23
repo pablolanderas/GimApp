@@ -142,7 +142,7 @@ fun ShowHistorical(
         )
         HistoricalLayout(
             trainings = trainings,
-            onClickTraining = {  },
+            onClickTraining = { viewModel.selectTraining(it) },
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)

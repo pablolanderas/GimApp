@@ -10,5 +10,7 @@ enum class GimScreens() {
     Historical,
     SeeTraining,
 
-    AddExercise
+    AddExercise,
+
+    SeeExercises
 }

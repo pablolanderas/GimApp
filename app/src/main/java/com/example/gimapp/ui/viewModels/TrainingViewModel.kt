@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.example.gimapp.data.database.DataBase
+import com.example.gimapp.data.database.ejercicisosDePrueba
 import com.example.gimapp.domain.Exercise
 import com.example.gimapp.domain.ExerciseRoutine
 import com.example.gimapp.domain.ExerciseSet
@@ -72,6 +73,8 @@ class TrainingViewModel @Inject constructor(
     val routines: LiveData<List<Routine>> = _routines
     private val _historical = MutableLiveData<List<TrainingExercise>>()
     val historical: LiveData<List<TrainingExercise>> = _historical
+    private val _modes = MutableLiveData<List<String>>()
+    val modes: LiveData<List<String>> = _modes
 
     private var menuMessage: (@Composable (onClick: () -> Unit) -> Unit)? = null
 
@@ -128,9 +131,11 @@ class TrainingViewModel @Inject constructor(
 
     fun setOtherActualExerciseRoutine(
         e: ExerciseRoutine,
+        mode: String,
         goNextExercise: () -> Unit,
         context: Context
     ) {
+        e.exercise.mode = mode
         if (!e.isReal()) {
             showToast("Los datos no son válidos", context)
             return
@@ -344,6 +349,12 @@ class TrainingViewModel @Inject constructor(
         return t
     }
 
+    fun updateModesList(e: Exercise) {
+        viewModelScope.launch {
+            _modes.value = db.getExerciseModes(e)
+        }
+    }
+
     // Functions to improve readability
     private fun actualExerciseRoutineByIndex(): ExerciseRoutine? {
         if (_actualRoutineExerciseRoutineIndex.value!! == -1) return null
@@ -422,22 +433,9 @@ class TrainingViewModel @Inject constructor(
 
     fun borrar(context: Context) {
         viewModelScope.launch {
-//            ejerciciosPrueba.forEach {
-//                db.saveExercise(it)
-//            }
-//            DatabBasev1().getAllRoutines().forEach { routine ->
-//                routine.exercises.forEach { exerciseRoutine ->
-//                    // Buscar el ejercicio en la lista ejerciciosPrueba donde coincida el nombre
-//                    val matchingExercise =
-//                        ejerciciosPrueba.find { it.name == exerciseRoutine.exercise.name }
-//
-//                    // Asignar el ejercicio si se encuentra
-//                    if (matchingExercise != null) {
-//                        exerciseRoutine.exercise = matchingExercise
-//                    } else TODO("No coincide")
-//                }
-//                db.saveRoutine(routine)
-//            }
+            ejercicisosDePrueba.forEach {
+                db.saveExercise(it)
+            }
             showToast("Se han creado", context)
         }
     }

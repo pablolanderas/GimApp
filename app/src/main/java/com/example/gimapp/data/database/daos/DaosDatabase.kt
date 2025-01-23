@@ -7,11 +7,13 @@ import com.example.gimapp.data.database.entities.Converters
 import com.example.gimapp.data.database.entities.ExerciseEntity
 import com.example.gimapp.data.database.entities.ExerciseRoutineEntity
 import com.example.gimapp.data.database.entities.ExerciseSetEntity
+import com.example.gimapp.data.database.entities.ModeEntity
 import com.example.gimapp.data.database.entities.RoutineEntity
 import com.example.gimapp.data.database.entities.TrainingEntity
 
 @Database(entities = [
         ExerciseEntity::class,
+        ModeEntity::class,
         RoutineEntity::class,
         ExerciseRoutineEntity::class,
         TrainingEntity::class,

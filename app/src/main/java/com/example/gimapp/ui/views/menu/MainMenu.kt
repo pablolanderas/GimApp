@@ -56,14 +56,10 @@ fun MainMenu(viewModel: TrainingViewModel) {
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        MenuButton(text = "Nuevo entrenamiento", onClicked = {
-            viewModel.startNewTraining()
-        })
-        MenuButton(text = "Historial", onClicked = {
-            viewModel.navigateTo(GimScreens.Historical)
-        })
+        MenuButton(text = "Nuevo entrenamiento") { viewModel.startNewTraining() }
+        MenuButton(text = "Historial") { viewModel.navigateTo(GimScreens.Historical) }
         MenuButton(text = "Rutinas")
-        MenuButton(text = "Ejercicios")
+        MenuButton(text = "Ejercicios") { viewModel.navigateTo(GimScreens.SeeExercises) }
         MenuButton(text = "Ajustes" ) {
             viewModel.borrar(context)
         }

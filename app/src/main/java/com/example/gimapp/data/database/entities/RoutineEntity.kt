@@ -1,37 +1,50 @@
 package com.example.gimapp.data.database.entities
 
-import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import androidx.room.Relation
 import com.example.gimapp.domain.Exercise
 import com.example.gimapp.domain.ExerciseRoutine
 import com.example.gimapp.domain.ExerciseSet
 import com.example.gimapp.domain.MuscularGroup
 import com.example.gimapp.domain.Routine
 import com.example.gimapp.domain.Training
-import com.example.gimapp.domain.TrainingExercise
 import java.time.LocalDate
 
 @Entity(tableName = "exercise")
 data class ExerciseEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @PrimaryKey
     val name: String,
-    val mode: String,
     val muscle: Int,
     val imgUri: Int? = null
 ) {
-    fun toDomain(): Exercise {
-        return Exercise(name, mode, MuscularGroup.entries[muscle], imgUri, id)
+    fun toDomain(mode: String): Exercise {
+        return Exercise(name, mode, MuscularGroup.entries[muscle], imgUri)
     }
     companion object {
         fun fromDomain(e: Exercise) : ExerciseEntity {
-            return ExerciseEntity(name=e.name, mode=e.mode, muscle=e.muscle.ordinal, imgUri=e.imgURI, id=e.id)
+            return ExerciseEntity(name=e.name, muscle=e.muscle.ordinal, imgUri=e.imgURI)
         }
     }
 }
+
+@Entity(
+    tableName = "mode",
+    foreignKeys = [
+        ForeignKey(
+            entity = ExerciseEntity::class,
+            parentColumns = ["name"],
+            childColumns = ["exerciseFk"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
+data class ModeEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val exerciseFk: String,
+    val mode: String
+)
 
 @Entity(tableName = "routine")
 class RoutineEntity(
@@ -53,7 +66,7 @@ class RoutineEntity(
     primaryKeys = ["position", "exerciseFk", "routineFk"],
     foreignKeys = [
         ForeignKey(
-            entity = ExerciseEntity::class,
+            entity = ModeEntity::class,
             parentColumns = ["id"],
             childColumns = ["exerciseFk"],
             onDelete = ForeignKey.CASCADE
@@ -79,10 +92,10 @@ data class ExerciseRoutineEntity(
         return ExerciseRoutine(e, sets, minReps, maxReps)
     }
     companion object {
-        fun fromDomain(e: ExerciseRoutine, position: Int, routineFK: Long) : ExerciseRoutineEntity {
+        fun fromDomain(e: ExerciseRoutine, position: Int, routineFK: Long, modeId: Long) : ExerciseRoutineEntity {
             return ExerciseRoutineEntity(
                 position = position,
-                exerciseFk = e.exercise.id,
+                exerciseFk = modeId,
                 routineFk = routineFK,
                 sets = e.sets,
                 minReps = e.minReps,
@@ -122,7 +135,7 @@ const val DEFAULT_EFFORT = 0
             onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
-            entity = ExerciseEntity::class,
+            entity = ModeEntity::class,
             parentColumns = ["id"],
             childColumns = ["exerciseFk"],
             onDelete = ForeignKey.CASCADE
@@ -141,13 +154,13 @@ data class ExerciseSetEntity(
         return ExerciseSet(weight, reps, DEFAULT_EFFORT)
     }
     companion object {
-        fun fromDomain(t: Training) : List<ExerciseSetEntity> {
+        suspend fun fromDomain(t: Training, idGetter: suspend  (Exercise) -> Long) : List<ExerciseSetEntity> {
             val exerciseSets = mutableListOf<ExerciseSetEntity>()
             var count = 1
             t.exercises.forEach { e ->
                 e.sets.forEach { s ->
                     exerciseSets.add(
-                        ExerciseSetEntity(count++, t.id, e.exercise.id, s.weight, s.reps)
+                        ExerciseSetEntity(count++, t.id, idGetter(e.exercise), s.weight, s.reps)
                     )
                 }
             }
@@ -156,7 +169,7 @@ data class ExerciseSetEntity(
     }
 }
 
-data class ExerciseTrainingDetails(
+data class ExerciseTrainingDetailsMapper(
     val trainingFk: Long,
     val date: LocalDate,
     val weight: Double,
@@ -164,5 +177,16 @@ data class ExerciseTrainingDetails(
 ) {
     fun toDomain(): ExerciseSet {
         return ExerciseSet(weight, reps, DEFAULT_EFFORT)
+    }
+}
+
+data class ExerciseWithModeMapper(
+    val name: String,
+    val mode: String,
+    val muscle: Int,
+    val imgUri: Int? = null,
+) {
+    fun toDomain(): Exercise {
+        return ExerciseEntity(name, muscle, imgUri).toDomain(mode)
     }
 }

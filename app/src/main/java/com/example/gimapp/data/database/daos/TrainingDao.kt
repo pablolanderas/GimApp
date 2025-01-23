@@ -5,7 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.gimapp.data.database.entities.ExerciseSetEntity
-import com.example.gimapp.data.database.entities.ExerciseTrainingDetails
+import com.example.gimapp.data.database.entities.ExerciseTrainingDetailsMapper
 import com.example.gimapp.data.database.entities.TrainingEntity
 
 @Dao
@@ -18,7 +18,7 @@ interface TrainingDao {
             WHERE es.exerciseFk = :exerciseFk
             ORDER BY t.date DESC, es.trainingFk DESC, es.position ASC
         """)
-        suspend fun getExerciseTrainingDetails(exerciseFk: Long): List<ExerciseTrainingDetails>
+        suspend fun getExerciseTrainingDetails(exerciseFk: Long): List<ExerciseTrainingDetailsMapper>
 
         @Insert(onConflict = OnConflictStrategy.REPLACE)
         suspend fun insertTraining(t: TrainingEntity): Long

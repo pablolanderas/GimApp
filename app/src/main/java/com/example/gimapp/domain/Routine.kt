@@ -21,10 +21,9 @@ enum class MuscularGroup(
 
 class Exercise(
     val name: String,
-    val mode: String,
+    var mode: String,
     val muscle: MuscularGroup = MuscularGroup.Chest,
-    val imgURI: Int? = null,
-    var id: Long = 0
+    val imgURI: Int? = null
 )
 
 class ExerciseRoutine(

@@ -5,6 +5,7 @@ import com.example.gimapp.data.database.daos.DaosDatabase
 import com.example.gimapp.data.database.entities.ExerciseEntity
 import com.example.gimapp.data.database.entities.ExerciseRoutineEntity
 import com.example.gimapp.data.database.entities.ExerciseSetEntity
+import com.example.gimapp.data.database.entities.ModeEntity
 import com.example.gimapp.data.database.entities.RoutineEntity
 import com.example.gimapp.data.database.entities.TrainingEntity
 import com.example.gimapp.domain.Exercise
@@ -22,7 +23,9 @@ class DataBase @Inject constructor(
         val id: Long = daos.getRoutineDao().insertRoutine(RoutineEntity.fromDomain(r))
         r.exercises.forEachIndexed { index, exerciseRoutine ->
             daos.getRoutineDao().insertExerciseRoutineEntity(
-                ExerciseRoutineEntity.fromDomain(exerciseRoutine, index, id)
+                ExerciseRoutineEntity.fromDomain(
+                    exerciseRoutine, index, id, getExerciseModeId(exerciseRoutine.exercise)
+                )
             )
         }
         r.id = id
@@ -46,7 +49,6 @@ class DataBase @Inject constructor(
     }
 
     private suspend fun getRoutineById(id: Long, exercises: MutableMap<Long, Exercise>): Routine {
-        Log.d("DEV", "Entrado con id:$id")
         val routine = daos.getRoutineDao().getRoutineById(id).toDomain()
         daos.getRoutineDao().getAllExerciseRoutine(id).forEach {
             updateExerciseDictIfNotContains(it.exerciseFk, exercises)
@@ -57,7 +59,7 @@ class DataBase @Inject constructor(
 
     suspend fun saveTraining(t: Training) {
         t.id = daos.getTrainingDao().insertTraining(TrainingEntity.fromDomain(t))
-        ExerciseSetEntity.fromDomain(t).forEach {
+        ExerciseSetEntity.fromDomain(t, { getExerciseModeId(it) }).forEach {
             daos.getTrainingDao().insertExerciseSet(it)
         }
     }
@@ -103,7 +105,7 @@ class DataBase @Inject constructor(
     suspend fun getExerciseTrainings(e: Exercise): List<TrainingExercise> {
         val trainings: MutableList<TrainingExercise> = mutableListOf()
         var actTrainingId: Long = -1
-        daos.getTrainingDao().getExerciseTrainingDetails(e.id).forEach {
+        daos.getTrainingDao().getExerciseTrainingDetails(getExerciseModeId(e)).forEach {
             if (it.trainingFk != actTrainingId) {
                 trainings.add(TrainingExercise(e, it.date, mutableListOf()))
                 actTrainingId = it.trainingFk
@@ -114,21 +116,33 @@ class DataBase @Inject constructor(
     }
 
     suspend fun saveExercise(e: Exercise) {
-        val id = daos.getExerciseDao().insert(ExerciseEntity.fromDomain(e))
-        e.id = id
+        if (daos.getExerciseDao().getByName(e.name) == null) {
+            daos.getExerciseDao().insertExercise(ExerciseEntity.fromDomain(e))
+        }
+        daos.getExerciseDao().insertMode(ModeEntity(exerciseFk=e.name, mode=e.mode))
     }
 
     suspend fun getExercisesByMuscle(m: MuscularGroup): List<Exercise> {
         return daos.getExerciseDao().getAllExercisesFromMuscle(m.ordinal).map {
-            it.toDomain()
+            it.toDomain("normal")
         }
+    }
+
+    suspend fun getExerciseModes(e: Exercise): List<String> {
+        return daos.getExerciseDao().getExerciseModes(e.name)
     }
 
     private suspend fun updateExerciseDictIfNotContains(id: Long, map: MutableMap<Long, Exercise>) {
         if (id !in map) {
             map[id] =
-                daos.getExerciseDao().getById(id).toDomain()
+                daos.getExerciseDao().getExerciseByModeId(id).toDomain()
         }
+    }
+
+    private suspend fun getExerciseModeId(e: Exercise): Long {
+        Log.d("DEV", "Entra con ${e.name} : ${e.mode}")
+        return daos.getExerciseDao().getModeId(e.name, e.mode)
+            ?: throw Error("No existe el modo")
     }
 
 }
