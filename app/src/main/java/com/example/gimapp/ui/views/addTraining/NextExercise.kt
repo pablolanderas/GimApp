@@ -140,7 +140,7 @@ fun ExerciseInfo(
             )
             InfoBar(
                 title = "Peso:",
-                value = "${DecimalFormat("#.##").format(weight)} kg",
+                value = if (weight != 0.0) "${DecimalFormat("#.##").format(weight)} kg" else "Sin registrar",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
@@ -258,8 +258,8 @@ fun NextExercise(viewModel: TrainingViewModel) {
             )
             ExerciseInfo(
                 exerciseRoutine = exerciseRoutine,
-                weight = 70.0,
-                addWeight = true,
+                weight = exerciseHistorical.firstOrNull()?.getWeightAverage() ?: 0.0,
+                addWeight = false,
                 removeWeight = false)
             Text(
                 text = "Historial:",

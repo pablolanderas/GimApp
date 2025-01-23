@@ -13,9 +13,6 @@ CAMBIO DE ARQUITECTURA A MVVM
 [ ] Revisada la vista SeeTraining
 
 # TODO
-- Arreglar decimales en pesos
-- Arreglar peso cuando te dice el proximo ejercicio
-- Esconder el teclado al aceptar el max de repeticiones en añadir ejercicio a entrenamiento
 - Actualizar ejercicio
     - cambiar id, mejor el nombre
     - actualizar vistas para q solo muestre el nombre, y el modo lo seleccionas dentro

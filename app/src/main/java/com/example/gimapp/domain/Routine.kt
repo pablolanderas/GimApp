@@ -54,7 +54,11 @@ class TrainingExercise(
     val exercise: Exercise,
     val date: LocalDate?,
     val sets: MutableList<ExerciseSet>
-)
+) {
+    fun getWeightAverage(): Double {
+        return sets.sumOf { it.weight } / sets.size
+    }
+}
    
 class Training(
     val date: LocalDate,

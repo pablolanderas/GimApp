@@ -26,11 +26,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -50,7 +52,9 @@ fun ThisOutlinedTextField(
     maxNumberLength: Int,
     focusRequester: FocusRequester?,
     modifier: Modifier = Modifier,
-    onNext: (() -> Unit)? = null
+    onNext: (() -> Unit)? = null,
+    onDone: (() -> Unit)? = null,
+    imeAction: ImeAction = ImeAction.Next
 ) {
     var numValue by remember { mutableStateOf("") }
     OutlinedTextField(
@@ -73,12 +77,15 @@ fun ThisOutlinedTextField(
         ),
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Number,
-            imeAction = ImeAction.Next
+            imeAction = imeAction
         ),
         keyboardActions = KeyboardActions(
             onNext = {
                 onNext?.invoke()
-            }
+            },
+            onDone = {
+                onDone?.invoke()
+            },
         ),
         modifier = modifier
             .then(
@@ -124,7 +131,6 @@ fun RepsSelector(
     setMaxReps: (Int?) -> Unit,
     minRepsFocusRequester: FocusRequester,
     maxRepsFocusRequester: FocusRequester,
-    cleanFocusManager: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -154,11 +160,15 @@ fun RepsSelector(
                 .align(Alignment.CenterVertically)
                 .padding(horizontal = 10.dp)
         )
+        val focusManager = LocalFocusManager.current
         ThisOutlinedTextField(
             setValue = setMaxReps,
             maxNumberLength = 2,
             focusRequester = maxRepsFocusRequester,
-            onNext = { cleanFocusManager() },
+            onDone = {
+                focusManager.clearFocus()
+            },
+            imeAction = ImeAction.Done,
             modifier = Modifier
                 .width(60.dp)
         )
@@ -174,7 +184,6 @@ fun DialogSetExerciseRutineToTraining(
 ) {
     val focusMinRep = remember { FocusRequester() }
     val focusMaxRep = remember { FocusRequester() }
-    val focusManager = LocalFocusManager.current
     var numSets: Int? by remember { mutableStateOf(null) }
     var minReps: Int? by remember { mutableStateOf(null) }
     var maxReps: Int? by remember { mutableStateOf(null) }
@@ -208,7 +217,6 @@ fun DialogSetExerciseRutineToTraining(
                 setMaxReps = { maxReps = it },
                 minRepsFocusRequester = focusMinRep,
                 maxRepsFocusRequester = focusMaxRep,
-                cleanFocusManager = { focusManager.clearFocus() },
                 modifier = Modifier
                     .padding(top = 20.dp)
             )

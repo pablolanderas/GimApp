@@ -212,11 +212,7 @@ fun ColumOfTextSelecter(
         )
         OutlinedTextField(
             value = value,
-            onValueChange = { newValue ->
-                if ((newValue.isEmpty() || newValue.all { it.isDigit() }) && newValue.length <= 5) {
-                    onValueChange(newValue)
-                }
-            },
+            onValueChange = { onValueChange(it) },
             colors = colors(
                 focusedContainerColor = MaterialTheme.colorScheme.secondary,
                 unfocusedContainerColor = MaterialTheme.colorScheme.secondary,
@@ -452,7 +448,7 @@ fun AddSet(
     viewModel: TrainingViewModel
 ) {
     val context = LocalContext.current
-    val lastExerciseSet = viewModel.getActualExcerciseRutineLastExerciseSet()
+    val lastExerciseSet: ExerciseSet? = viewModel.getActualExcerciseRutineLastExerciseSet()
     var weightValue: String by remember {
         mutableStateOf(lastExerciseSet?.weight
                         ?.let {
@@ -486,8 +482,20 @@ fun AddSet(
             modifier = Modifier.padding(horizontal = 20.dp),
             weightValue = weightValue,
             repsValue = repsValue,
-            onValueChangeWeight = { weightValue = it },
-            onValueChangeReps = { repsValue = it }
+            onValueChangeWeight = { newValue ->
+                val regex = """^\d+(\.\d*)?$""".toRegex()
+                if (newValue.isEmpty() || (newValue.matches(regex) && newValue.length <= 6)) {
+                    weightValue = newValue
+                } else if (newValue.length > 1 && newValue.count { it == '.' } == 1 && newValue.lastOrNull() in listOf(',', '.')) {
+                    weightValue = newValue.dropLast(1) + "."
+                }
+            },
+            onValueChangeReps = { newValue ->
+                if ((newValue.isEmpty() || newValue.all { it.isDigit() }) && newValue.length <= 5) {
+                    repsValue = newValue
+                }
+            }
+
         )
         Spacer(modifier = Modifier.weight(0.3f))
         Row(
