@@ -1,26 +1,13 @@
 package com.example.gimapp.views.addTraining
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -29,8 +16,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.gimapp.ui.viewModels.TrainingViewModel
@@ -40,144 +25,11 @@ import com.example.gimapp.data.database.daos.DaosDatabase_Impl
 import com.example.gimapp.domain.Exercise
 import com.example.gimapp.domain.MuscularGroup
 import com.example.gimapp.ui.theme.GimAppTheme
+import com.example.gimapp.ui.viewModels.managers.NavigateManager
 import com.example.gimapp.ui.views.GimScreens
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DropListMuscularGroup(
-    modifier: Modifier,
-    selectedOption: MuscularGroup?,
-    optionSelected: (MuscularGroup) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-    ExposedDropdownMenuBox(
-        modifier = modifier
-            .background(
-                color = Color(0x00000000),
-                shape = RoundedCornerShape(16.dp)
-            ),
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded }
-    ) {
-        TextField(
-            value = selectedOption?.getText() ?: "Seleccion un grupo muscular",
-            onValueChange = { },
-            readOnly = true,
-            textStyle = MaterialTheme.typography.bodyMedium.copy(
-                color = Color.White,
-                textAlign = TextAlign.Left
-            ),
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Filled.ArrowDropDown,
-                    contentDescription = "Dropdown icon",
-                    tint = Color.White
-                )
-            },
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.primary,
-                unfocusedContainerColor = MaterialTheme.colorScheme.primary,
-                disabledContainerColor = MaterialTheme.colorScheme.primary,
-            ),
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor() // Ancla el menú al TextField
-                .background(
-                    color = Color(0x00000000),
-                    shape = RoundedCornerShape(16.dp)
-                )
-        )
-
-        // Crear el menú desplegable
-        ExposedDropdownMenu(
-            modifier = Modifier
-                .background(
-                    color = Color(0x00FF0000),
-                    shape = RoundedCornerShape(16.dp)
-                ),
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            MuscularGroup.values().forEach { option ->
-                DropdownMenuItem(
-                    text = {
-                        androidx.compose.material3.Text(
-                            text = option.getText(),  // Centra el texto dentro de la DropdownMenuItem
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.fillMaxWidth()  // Asegura que el texto ocupe todo el ancho disponible
-                        )
-                    },
-                    onClick = {
-                        optionSelected(option)
-                        expanded = false
-                    },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun ExerciseSelector(
-    modifier: Modifier = Modifier,
-    options: List<Exercise>,
-    showAddExercise: Boolean,
-    selected: (Exercise) -> Unit,
-    onAddExercise: () -> Unit
-) {
-    LazyColumn(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(
-                MaterialTheme.colorScheme.primary,
-                shape = RoundedCornerShape(15.dp)
-            )
-            .padding(10.dp)
-    ) {
-        items(options) { exercise ->
-            Button(
-                onClick = { selected(exercise) },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary
-                ),
-                shape = RoundedCornerShape(5.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 5.dp)
-            ) {
-                Text(
-                    text = exercise.name.replaceFirstChar { it.uppercase() },
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.White
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 5.dp)
-                )
-            }
-        }
-        if (showAddExercise) {
-            item {
-                Button(
-                    onClick = onAddExercise,
-                    shape = RoundedCornerShape(50),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        text = "+",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                }
-            }
-        }
-    }
-}
+import com.example.gimapp.ui.views.components.ExercisesDisplay
+import com.example.gimapp.ui.views.exercises.DialogAddExercise
+import com.example.gimapp.ui.views.exercises.DialogAddMode
 
 @Composable
 fun AddExerciseToTraining(
@@ -186,18 +38,23 @@ fun AddExerciseToTraining(
     Header(
         verticalArrangement = Arrangement.SpaceEvenly
     ) {
-        var musucarGroup: MuscularGroup? by remember { mutableStateOf(null) }
         var exercise: Exercise? by remember { mutableStateOf(null) }
         var showDialog: Boolean by remember { mutableStateOf(false) }
+        val muscularGroup: MuscularGroup? by viewModel.muscularGroup.observeAsState(initial=null)
         val exerciseList by viewModel.exercises.observeAsState(initial=emptyList())
+        val showAddMode: Boolean by viewModel.showAddMode.observeAsState(initial=false)
+        val showAddExercise: Boolean by viewModel.showAddExercise.observeAsState(initial=false)
+        if (showAddMode) { DialogAddMode(viewModel) }
+        if (showAddExercise) { DialogAddExercise(viewModel) }
         if (showDialog) {
             DialogSetExerciseRutineToTraining (
                 exercise = exercise ?: throw Error("The exercise is not selected and the dialog was called"),
                 viewModel = viewModel,
                 goNextExercise = {
-                    viewModel.navigateTo(GimScreens.NextExercise)
+                    NavigateManager.navigateTo(GimScreens.NextExercise)
                     showDialog = false
                 },
+                onAddModeToExercise = { viewModel.openAddMode(exercise!!) },
                 onExit = { showDialog = false }
             )
         }
@@ -210,31 +67,18 @@ fun AddExerciseToTraining(
                 .fillMaxWidth()
                 .padding(top = 40.dp)
         )
-        DropListMuscularGroup(
-            modifier = Modifier
-                .padding(
-                    horizontal = 30.dp,
-                    vertical = 30.dp
-                ),
-            selectedOption = musucarGroup,
-            optionSelected = {
-                viewModel.updateMuscleExercises(it)
-                musucarGroup = it
-            },
-        )
-        ExerciseSelector(
-            modifier = Modifier
-                .padding(
-                    horizontal = 30.dp
-                )
-                .weight(1f),
-            options = exerciseList,
-            showAddExercise = musucarGroup != null,
-            selected = {
+        ExercisesDisplay(
+            muscularGroup = muscularGroup,
+            actualOptions = exerciseList,
+            onChangedMuscularGroup = { viewModel.updateMuscleExercises(it) },
+            onSelectedExercise = {
                 exercise = it
                 showDialog = true
             },
-            onAddExercise = { viewModel.navigateTo(GimScreens.AddExercise) }
+            onAddExercise = { viewModel.openAddExercise() },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(30.dp)
         )
         Spacer(modifier = Modifier.height(50.dp))
     }

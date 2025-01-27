@@ -20,14 +20,16 @@ import com.example.gimapp.domain.MuscularGroup
 import com.example.gimapp.domain.Routine
 import com.example.gimapp.domain.Training
 import com.example.gimapp.domain.TrainingExercise
+import com.example.gimapp.ui.viewModels.interfaces.AddExerciseUsable
+import com.example.gimapp.ui.viewModels.interfaces.AddModeUsable
+import com.example.gimapp.ui.viewModels.managers.NavigateManager
+import com.example.gimapp.ui.viewModels.managers.ToastManager
 import com.example.gimapp.ui.views.GimScreens
 import com.example.gimapp.views.addTraining.AddSetState
 import com.example.gimapp.views.menu.MenuMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -36,7 +38,7 @@ val NULABLE_ROUTINE_EXERCISE = ExerciseRoutine(Exercise("", "", MuscularGroup.Ab
 @HiltViewModel
 class TrainingViewModel @Inject constructor(
     private val db: DataBase
-) : ViewModel() {
+) : ViewModel(), AddModeUsable, AddExerciseUsable {
 
     private val _routine = MutableLiveData<Routine?>()
     val routine: LiveData<Routine?> = _routine
@@ -75,6 +77,12 @@ class TrainingViewModel @Inject constructor(
     val historical: LiveData<List<TrainingExercise>> = _historical
     private val _modes = MutableLiveData<List<String>>()
     val modes: LiveData<List<String>> = _modes
+    private val _muscularGroup = MutableLiveData<MuscularGroup?>()
+    val muscularGroup: LiveData<MuscularGroup?> = _muscularGroup
+    private val _showAddMode = MutableLiveData<Boolean>()
+    val showAddMode: LiveData<Boolean> = _showAddMode
+    private val _showAddExercise = MutableLiveData<Boolean>()
+    val showAddExercise: LiveData<Boolean> = _showAddExercise
 
     private var menuMessage: (@Composable (onClick: () -> Unit) -> Unit)? = null
 
@@ -84,7 +92,7 @@ class TrainingViewModel @Inject constructor(
 
     fun startNewTraining() {
         loadAllRoutines()
-        navigateTo(GimScreens.SelectRoutine)
+        NavigateManager.navigateTo(GimScreens.SelectRoutine)
         _routine.value = null
         _startedRoutine.value = false
     }
@@ -102,8 +110,8 @@ class TrainingViewModel @Inject constructor(
     @RequiresApi(Build.VERSION_CODES.O)
     fun startRoutine() {
         _training.value = Training(LocalDate.now(), mutableListOf(), _routine.value, false)
-        if (_routine.value != null) navigateTo(GimScreens.NextExercise)
-        else navigateTo(GimScreens.AddExerciseToTraining)
+        if (_routine.value != null) NavigateManager.navigateTo(GimScreens.NextExercise)
+        else NavigateManager.navigateTo(GimScreens.AddExerciseToTraining)
     }
 
     fun getActualExerciseRoutine(): ExerciseRoutine {
@@ -154,7 +162,7 @@ class TrainingViewModel @Inject constructor(
         )
         _remainingExerciseSets.value = _actualExericseRoutine.value!!.sets
         updateSetState()
-        navigateTo(GimScreens.OnSet)
+        NavigateManager.navigateTo(GimScreens.OnSet)
     }
 
     fun startTimer() {
@@ -239,12 +247,12 @@ class TrainingViewModel @Inject constructor(
     fun goNextExerciseInTraining() {
         setNextActualExerciseRoutine()
         if (_actualExericseRoutine.value != null) {
-            navigateTo(GimScreens.NextExercise)
+            NavigateManager.navigateTo(GimScreens.NextExercise)
         } else if (_training.value!!.exercises.isEmpty()) {
             setMenuMessage("El entrenamiento está vacío\nNo se ha guardado")
-            navigateTo(GimScreens.Start)
+            NavigateManager.navigateTo(GimScreens.Start)
         } else {
-            navigateTo(GimScreens.EndRoutine)
+            NavigateManager.navigateTo(GimScreens.EndRoutine)
         }
     }
 
@@ -280,7 +288,7 @@ class TrainingViewModel @Inject constructor(
             db.saveTraining(_training.value!!)
         }
         setMenuMessage("El entrenamiento se ha guardado correctamente")
-        navigateTo(GimScreens.Start)
+        NavigateManager.navigateTo(GimScreens.Start)
     }
 
     fun closeChangedRutineDialog() {
@@ -313,10 +321,12 @@ class TrainingViewModel @Inject constructor(
             )
         }.toMutableList()
 
-        val newRoutine = Routine(routineName, routineExercises)
-        viewModelScope.launch { db.saveRoutine(newRoutine) }
-        _training.value!!.routine = newRoutine
-        saveTrain()
+        val newRoutine = Routine(routineName.lowercase().trim(), routineExercises)
+        viewModelScope.launch {
+            db.saveRoutine(newRoutine)
+            _training.value!!.routine = newRoutine
+            saveTrain()
+        }
     }
 
     fun loadAllRoutines() {
@@ -335,6 +345,7 @@ class TrainingViewModel @Inject constructor(
     }
 
     fun updateMuscleExercises(m: MuscularGroup) {
+        _muscularGroup.value = m
         viewModelScope.launch {
             _exercises.value = db.getExercisesByMuscle(m)
         }
@@ -404,39 +415,57 @@ class TrainingViewModel @Inject constructor(
         }
     }
 
-    // Toast funtion
-    object ToastManager {
-        private var currentToast: Toast? = null
+    private var exerciseToAddMode: Exercise? = null
 
-        fun showToast(message: String, context: Context, length: Int = Toast.LENGTH_SHORT) {
-            // Cancela el Toast actual si existe
-            currentToast?.cancel()
+    fun openAddMode(e: Exercise) {
+        _showAddMode.value = true
+        exerciseToAddMode = e
+    }
 
-            // Crea y muestra el nuevo Toast
-            currentToast = Toast.makeText(context, message, length).apply {
-                show()
-            }
+    override fun closeAddMode() {
+        _showAddMode.value = false
+    }
+
+    override fun addModeToExercise(name: String, context: Context) {
+        viewModelScope.launch {
+            addModeToExercise(
+                exercise = exerciseToAddMode!!,
+                mode = name,
+                db = db,
+                trueCode = {
+                    showToast("Se ha añadido el modo correctamente", context)
+                    _modes.value = _modes.value!! + name
+                    closeAddMode()
+                },
+                falseCode = {
+                    showToast("Ese modo ya existe", context)
+                }
+            )
         }
     }
 
-    private var navigateObjetc: ((String) -> Unit)? = null
-
-    fun setNavigate(f: (String) -> Unit) {
-        navigateObjetc = f
+    fun openAddExercise() {
+        _showAddExercise.value = true
     }
 
-    // Navigate function
-    fun navigateTo(screen: GimScreens) {
-        navigateObjetc?.invoke(screen.name)
-            ?: throw Exception("No se ha inicializado la navegacion")
+    override fun closeAddExercise() {
+        _showAddExercise.value = false
     }
 
-    fun borrar(context: Context) {
+    override fun addExercise(exercise: Exercise, context: Context) {
         viewModelScope.launch {
-            ejercicisosDePrueba.forEach {
-                db.saveExercise(it)
-            }
-            showToast("Se han creado", context)
+            addExerciseLogic(
+                exercise = exercise,
+                db = db,
+                trueCode = {
+                    showToast("Se ha añadido correctamente", context)
+                    _exercises.value = _exercises.value!! + exercise
+                    closeAddExercise()
+                },
+                falseCode = {
+                    showToast("El ejercicio que estas intentando añadir ya existe", context)
+                }
+            )
         }
     }
 

@@ -24,7 +24,7 @@ data class ExerciseEntity(
     }
     companion object {
         fun fromDomain(e: Exercise) : ExerciseEntity {
-            return ExerciseEntity(name=e.name, muscle=e.muscle.ordinal, imgUri=e.imgURI)
+            return ExerciseEntity(name=e.name.lowercase(), muscle=e.muscle.ordinal, imgUri=e.imgURI)
         }
     }
 }
@@ -56,7 +56,7 @@ class RoutineEntity(
     }
     companion object {
         fun fromDomain(r: Routine) : RoutineEntity {
-            return RoutineEntity(name=r.name, id=r.id)
+            return RoutineEntity(name=r.name.lowercase(), id=r.id)
         }
     }
 }
@@ -187,6 +187,6 @@ data class ExerciseWithModeMapper(
     val imgUri: Int? = null,
 ) {
     fun toDomain(): Exercise {
-        return ExerciseEntity(name, muscle, imgUri).toDomain(mode)
+        return ExerciseEntity(name.lowercase(), muscle, imgUri).toDomain(mode.lowercase())
     }
 }

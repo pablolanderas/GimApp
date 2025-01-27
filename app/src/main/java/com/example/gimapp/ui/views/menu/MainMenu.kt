@@ -20,6 +20,7 @@ import com.example.gimapp.ui.views.components.Header
 import com.example.gimapp.data.database.DataBase
 import com.example.gimapp.data.database.daos.DaosDatabase_Impl
 import com.example.gimapp.ui.theme.GimAppTheme
+import com.example.gimapp.ui.viewModels.managers.NavigateManager
 import com.example.gimapp.ui.views.GimScreens
 
 @Composable
@@ -57,12 +58,10 @@ fun MainMenu(viewModel: TrainingViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         MenuButton(text = "Nuevo entrenamiento") { viewModel.startNewTraining() }
-        MenuButton(text = "Historial") { viewModel.navigateTo(GimScreens.Historical) }
+        MenuButton(text = "Historial") { NavigateManager.navigateTo(GimScreens.Historical) }
         MenuButton(text = "Rutinas")
-        MenuButton(text = "Ejercicios") { viewModel.navigateTo(GimScreens.SeeExercises) }
-        MenuButton(text = "Ajustes" ) {
-            viewModel.borrar(context)
-        }
+        MenuButton(text = "Ejercicios") { NavigateManager.navigateTo(GimScreens.SeeExercises) }
+        MenuButton(text = "Ajustes" )
     }
 }
 

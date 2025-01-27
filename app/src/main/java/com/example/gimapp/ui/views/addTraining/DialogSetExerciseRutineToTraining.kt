@@ -192,6 +192,7 @@ fun ModeSelector(
     selectedOption: String,
     options: List<String>,
     optionSelected: (String) -> Unit,
+    newModeSelected: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -263,7 +264,7 @@ fun ModeSelector(
                     DropdownMenuItem(
                         text = {
                             Text(
-                                text = option,
+                                text = option.replaceFirstChar { it.uppercase() },
                                 textAlign = TextAlign.Start,
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.fillMaxWidth()
@@ -275,6 +276,17 @@ fun ModeSelector(
                         },
                     )
                 }
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "- - -  Nuevo  - - -",
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    },
+                    onClick = newModeSelected,
+                )
             }
         }
     }
@@ -285,6 +297,7 @@ fun DialogSetExerciseRutineToTraining(
     exercise: Exercise,
     viewModel: TrainingViewModel,
     goNextExercise: () -> Unit,
+    onAddModeToExercise: () -> Unit,
     onExit: () -> Unit
 ) {
     val focusMinRep = remember { FocusRequester() }
@@ -317,6 +330,7 @@ fun DialogSetExerciseRutineToTraining(
                 selectedOption = selected,
                 options = modes,
                 optionSelected = { selected = it },
+                newModeSelected = onAddModeToExercise,
                 modifier = Modifier
                     .padding(top = 20.dp)
             )
@@ -371,6 +385,7 @@ fun PreviewDialogSetExerciseRutineToTraining() {
         DialogSetExerciseRutineToTraining (
             Exercise("press banca", "si"),
             TrainingViewModel(DataBase(DaosDatabase_Impl())),
+            {},
             {},
             {}
         )

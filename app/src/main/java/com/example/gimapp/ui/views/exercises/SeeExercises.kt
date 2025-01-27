@@ -1,9 +1,13 @@
 package com.example.gimapp.ui.views.exercises
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -34,6 +38,9 @@ fun SeeExercises(viewModel: ExercisesViewModel) {
 
         val muscularGroup: MuscularGroup? by viewModel.muscularGroup.observeAsState(initial=null)
         val exercisesOptions: List<Exercise> by viewModel.exercisesOptions.observeAsState(initial=emptyList())
+        val seeAddExercise: Boolean by viewModel.visibleDialogAddExercise.observeAsState(initial=false)
+
+        if (seeAddExercise) { DialogAddExercise(viewModel) }
 
         Text(
             text = "Ejercicios",
@@ -48,8 +55,8 @@ fun SeeExercises(viewModel: ExercisesViewModel) {
             muscularGroup = muscularGroup,
             actualOptions = exercisesOptions,
             onChangedMuscularGroup = { viewModel.updateMuscularGroup(it) },
-            onSelectedExercise = { },
-            onAddExercise = { },
+            onSelectedExercise = { viewModel.selectExercise(it) },
+            onAddExercise = { viewModel.openAddExercise() },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(30.dp)

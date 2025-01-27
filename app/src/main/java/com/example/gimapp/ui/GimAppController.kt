@@ -20,12 +20,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.gimapp.ui.viewModels.AppViewModel
 import com.example.gimapp.ui.viewModels.TrainingViewModel
 import com.example.gimapp.domain.Exercise
 import com.example.gimapp.ui.viewModels.ExercisesViewModel
 import com.example.gimapp.ui.viewModels.HistoricalViewModel
+import com.example.gimapp.ui.viewModels.managers.NavigateManager
 import com.example.gimapp.ui.views.GimScreens
+import com.example.gimapp.ui.views.exercises.ExerciseInfo
 import com.example.gimapp.ui.views.exercises.SeeExercises
 import com.example.gimapp.views.addTraining.AddExerciseToTraining
 import com.example.gimapp.views.addTraining.AddSet
@@ -52,9 +53,10 @@ class GimAppController(
     @RequiresApi(Build.VERSION_CODES.O)
     @Composable
     fun StartApp() {
+
         navController = rememberNavController()
-        trainingViewModel.setNavigate { navController.navigate(it) }
-        historicalViewModel.setNavigate { navController.navigate(it) }
+        NavigateManager.setNavigate { navController.navigate(it) }
+
         NavHost(
             navController = navController,
             startDestination = GimScreens.Start.name
@@ -106,11 +108,11 @@ class GimAppController(
                         .padding(top = 300.dp)
                 )
             }
-            composable(route = GimScreens.AddExercise.name) {
-                Text(text = "NUEVO ENTRENAMIENTO")
-            }
             composable(route = GimScreens.SeeExercises.name) {
                 SeeExercises(exercisesViewModel)
+            }
+            composable(route = GimScreens.ExerciseInfo.name) {
+                ExerciseInfo(exercisesViewModel)
             }
         }
     }

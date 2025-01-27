@@ -2,6 +2,7 @@ package com.example.gimapp.views.addTraining
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -120,7 +121,7 @@ fun DropListRutine(
                     DropdownMenuItem(
                         text = {
                             Text(
-                                text = option.name,
+                                text = option.name.replaceFirstChar { it.uppercase() },
                                 textAlign = TextAlign.Start,
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.fillMaxWidth()

@@ -27,7 +27,7 @@ interface ExerciseDao {
     suspend fun insertMode(mode: ModeEntity): Long
 
     @Query("SELECT m.id FROM mode m WHERE m.exerciseFk = :exercise AND m.mode = :mode")
-    suspend fun getModeId(exercise: String, mode: String): Long
+    suspend fun getModeId(exercise: String, mode: String): Long?
 
     @Query("""
         SELECT e.name, m.mode, e.muscle, e.imgUri

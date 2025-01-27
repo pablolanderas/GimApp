@@ -41,6 +41,7 @@ import com.example.gimapp.data.database.daos.DaosDatabase_Impl
 import com.example.gimapp.domain.ExerciseRoutine
 import com.example.gimapp.domain.TrainingExercise
 import com.example.gimapp.ui.theme.GimAppTheme
+import com.example.gimapp.ui.viewModels.managers.NavigateManager
 import com.example.gimapp.ui.views.GimScreens
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -294,7 +295,7 @@ fun NextExercise(viewModel: TrainingViewModel) {
                 .fillMaxWidth()
                 .padding(bottom = 25.dp)) {
                 Button(
-                    onClick = { viewModel.navigateTo(GimScreens.AddExerciseToTraining) },
+                    onClick = { NavigateManager.navigateTo(GimScreens.AddExerciseToTraining) },
                     modifier = Modifier
                         .weight(0.2f)
                         .border(

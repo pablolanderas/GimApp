@@ -33,6 +33,7 @@ import com.example.gimapp.data.database.daos.DaosDatabase_Impl
 import com.example.gimapp.domain.Training
 import com.example.gimapp.domain.TrainingExercise
 import com.example.gimapp.ui.theme.GimAppTheme
+import com.example.gimapp.ui.viewModels.managers.NavigateManager
 import com.example.gimapp.ui.views.GimScreens
 import java.time.LocalDate
 
@@ -125,7 +126,7 @@ fun EndRoutine(
                 .weight(1f)
         ) {
             Button(
-                onClick = { viewModel.navigateTo(GimScreens.AddExerciseToTraining) },
+                onClick = { NavigateManager.navigateTo(GimScreens.AddExerciseToTraining) },
                 modifier = Modifier
                     .align(Alignment.Center),
                 colors = ButtonDefaults.buttonColors(

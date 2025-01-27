@@ -1,8 +1,8 @@
 package com.example.gimapp.ui.views.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -43,7 +43,8 @@ import com.example.gimapp.ui.theme.GimAppTheme
 fun DropListMuscularGroup(
     modifier: Modifier,
     selectedOption: MuscularGroup?,
-    optionSelected: (MuscularGroup) -> Unit
+    optionSelected: (MuscularGroup) -> Unit,
+    color: Color = MaterialTheme.colorScheme.primary
 ) {
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(
@@ -71,9 +72,9 @@ fun DropListMuscularGroup(
                 )
             },
             colors = TextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.primary,
-                unfocusedContainerColor = MaterialTheme.colorScheme.primary,
-                disabledContainerColor = MaterialTheme.colorScheme.primary,
+                focusedContainerColor = color,
+                unfocusedContainerColor = color,
+                disabledContainerColor = color,
             ),
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
@@ -198,7 +199,8 @@ fun ExercisesDisplay(
         val exercisesModifier = Modifier
             .fillMaxHeight()
             .padding(top = centralPadding)
-        if (muscularGroup != null)
+
+        AnimatedVisibility(muscularGroup != null) {
             ExerciseSelector(
                 options = actualOptions,
                 showAddExercise = true,
@@ -206,7 +208,10 @@ fun ExercisesDisplay(
                 onAddExercise = onAddExercise,
                 modifier = exercisesModifier
             )
-        else Spacer(modifier = exercisesModifier)
+        }
+//        else {
+//                Spacer(modifier = exercisesModifier)
+//        }
     }
 
 }

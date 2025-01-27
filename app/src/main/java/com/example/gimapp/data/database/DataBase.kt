@@ -68,7 +68,7 @@ class DataBase @Inject constructor(
         val trainingsEntities = daos.getTrainingDao().getAllTrainings()
         if (trainingsEntities.isEmpty()) return emptyList()
         val exercises = mutableMapOf<Long, Exercise>()
-        val routines = mutableMapOf<Long?, Routine?>(0L to null)
+        val routines = mutableMapOf<Long?, Routine?>(null to null)
 
         var actTrainingId: Long = -1
         var actExerciseId: Long = -1
@@ -98,6 +98,9 @@ class DataBase @Inject constructor(
             }
 
             trainings.last().exercises.last().sets.add(it.toDomain())
+        }
+        trainings.last().exercises.forEach {
+            Log.d("DEV", "${it.exercise.name}: ${it.exercise.mode}")
         }
         return trainings
     }
@@ -140,9 +143,16 @@ class DataBase @Inject constructor(
     }
 
     private suspend fun getExerciseModeId(e: Exercise): Long {
-        Log.d("DEV", "Entra con ${e.name} : ${e.mode}")
         return daos.getExerciseDao().getModeId(e.name, e.mode)
             ?: throw Error("No existe el modo")
+    }
+
+    suspend fun getExerciseModeIdNullable(e: Exercise): Long? {
+        return daos.getExerciseDao().getModeId(e.name, e.mode)
+    }
+
+    suspend fun existExercise(name: String): Boolean {
+        return daos.getExerciseDao().getByName(name) != null
     }
 
 }

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gimapp.data.database.DataBase
 import com.example.gimapp.domain.Training
+import com.example.gimapp.ui.viewModels.managers.NavigateManager
 import com.example.gimapp.ui.views.GimScreens
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -29,19 +30,7 @@ class HistoricalViewModel @Inject constructor(
 
     fun selectTraining(t: Training) {
         _selectedTraining.value = t
-        navigateTo(GimScreens.SeeTraining)
-    }
-
-    private var navigateObjetc: ((String) -> Unit)? = null
-
-    fun setNavigate(f: (String) -> Unit) {
-        navigateObjetc = f
-    }
-
-    // Navigate function
-    fun navigateTo(screen: GimScreens) {
-        navigateObjetc?.invoke(screen.name)
-            ?: throw Exception("No se ha inicializado la navegacion")
+        NavigateManager.navigateTo(GimScreens.SeeTraining)
     }
 
 }
