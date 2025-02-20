@@ -1,7 +1,8 @@
-package com.example.gimapp.views.addTraining
+package com.example.gimapp.ui.views.addTraining
 
 import android.os.Build
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -464,6 +465,9 @@ fun AddSet(
     )
     val state: AddSetState by viewModel.stateOfAddSet.observeAsState(initial = AddSetState.Normal)
     viewModel.startTimer()
+
+    BackHandler { viewModel.goBackInAddSet(context) }
+
     Header(
         verticalArrangement = Arrangement.SpaceEvenly,
     ) {
@@ -544,7 +548,7 @@ fun AddSet(
             modifier = Modifier.padding(horizontal = 20.dp),
             state = state,
             onSkip = { viewModel.skipAddSet(context) },
-            onPrevious = { viewModel.previusSet() },
+            onPrevious = { viewModel.previousSet() },
             onAddSet = { viewModel.addExtraSet() }
         )
     }

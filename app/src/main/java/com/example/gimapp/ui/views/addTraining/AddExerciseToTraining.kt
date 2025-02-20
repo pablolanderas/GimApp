@@ -1,5 +1,6 @@
 package com.example.gimapp.views.addTraining
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,12 +39,16 @@ fun AddExerciseToTraining(
     Header(
         verticalArrangement = Arrangement.SpaceEvenly
     ) {
+
         var exercise: Exercise? by remember { mutableStateOf(null) }
         var showDialog: Boolean by remember { mutableStateOf(false) }
         val muscularGroup: MuscularGroup? by viewModel.muscularGroup.observeAsState(initial=null)
         val exerciseList by viewModel.exercises.observeAsState(initial=emptyList())
         val showAddMode: Boolean by viewModel.showAddMode.observeAsState(initial=false)
         val showAddExercise: Boolean by viewModel.showAddExercise.observeAsState(initial=false)
+
+        BackHandler { viewModel.goBackInAddExerciseToTraining() }
+
         if (showAddMode) { DialogAddMode(viewModel) }
         if (showAddExercise) { DialogAddExercise(viewModel) }
         if (showDialog) {
@@ -51,7 +56,7 @@ fun AddExerciseToTraining(
                 exercise = exercise ?: throw Error("The exercise is not selected and the dialog was called"),
                 viewModel = viewModel,
                 goNextExercise = {
-                    NavigateManager.navigateTo(GimScreens.NextExercise)
+                    viewModel.navigateToNextExerciseSinceAddExercise()
                     showDialog = false
                 },
                 onAddModeToExercise = { viewModel.openAddMode(exercise!!) },

@@ -1,6 +1,8 @@
 package com.example.gimapp.views.addTraining
 
+import android.content.Context
 import android.os.Build
+import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +24,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -93,6 +96,10 @@ fun EndRoutine(
     viewModel: TrainingViewModel
 ) {
     val training: Training by viewModel.training.observeAsState(initial = NULL_TRAIN)
+    val context: Context = LocalContext.current
+
+    BackHandler { viewModel.goBackInEndRoutine(context) }
+
     Header(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -126,7 +133,7 @@ fun EndRoutine(
                 .weight(1f)
         ) {
             Button(
-                onClick = { NavigateManager.navigateTo(GimScreens.AddExerciseToTraining) },
+                onClick = { viewModel.navigateToAddExerciseToTraining() },
                 modifier = Modifier
                     .align(Alignment.Center),
                 colors = ButtonDefaults.buttonColors(

@@ -1,8 +1,10 @@
 package com.example.gimapp.views.addTraining
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.icu.text.DecimalFormat
 import android.os.Build
+import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -242,6 +245,10 @@ fun NextExercise(viewModel: TrainingViewModel) {
     val exerciseRoutine: ExerciseRoutine = viewModel.getActualExerciseRoutine()
     val exerciseHistorical: List<TrainingExercise> by viewModel.historical.observeAsState(initial = emptyList())
     viewModel.updateExerciseHistorical()
+
+    val content = LocalContext.current
+    BackHandler { viewModel.goBackInNextExerciseView(content) }
+
     Header(
         verticalArrangement = Arrangement.SpaceEvenly,
     ) {
@@ -295,7 +302,7 @@ fun NextExercise(viewModel: TrainingViewModel) {
                 .fillMaxWidth()
                 .padding(bottom = 25.dp)) {
                 Button(
-                    onClick = { NavigateManager.navigateTo(GimScreens.AddExerciseToTraining) },
+                    onClick = { viewModel.navigateToAddExerciseToTraining() },
                     modifier = Modifier
                         .weight(0.2f)
                         .border(
@@ -319,7 +326,7 @@ fun NextExercise(viewModel: TrainingViewModel) {
                 }
                 Spacer(modifier = Modifier.weight(0.3f))
                 Button(
-                    onClick = { viewModel.goNextExerciseInTraining() },
+                    onClick = { viewModel.skipExerciseInTraining() },
                     modifier = Modifier
                         .weight(0.2f)
                         .border(

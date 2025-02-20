@@ -3,6 +3,7 @@ package com.example.gimapp.ui.viewModels
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
@@ -12,7 +13,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.example.gimapp.data.database.DataBase
-import com.example.gimapp.data.database.ejercicisosDePrueba
 import com.example.gimapp.domain.Exercise
 import com.example.gimapp.domain.ExerciseRoutine
 import com.example.gimapp.domain.ExerciseSet
@@ -25,7 +25,7 @@ import com.example.gimapp.ui.viewModels.interfaces.AddModeUsable
 import com.example.gimapp.ui.viewModels.managers.NavigateManager
 import com.example.gimapp.ui.viewModels.managers.ToastManager
 import com.example.gimapp.ui.views.GimScreens
-import com.example.gimapp.views.addTraining.AddSetState
+import com.example.gimapp.ui.views.addTraining.AddSetState
 import com.example.gimapp.views.menu.MenuMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -84,6 +84,12 @@ class TrainingViewModel @Inject constructor(
     private val _showAddExercise = MutableLiveData<Boolean>()
     val showAddExercise: LiveData<Boolean> = _showAddExercise
 
+    data class ExerciseRoutineHistorical(
+        val exercise: ExerciseRoutine,
+        val skipped: Boolean
+    )
+    private val historicalExercises: MutableList<ExerciseRoutineHistorical?> = mutableListOf()
+
     private var menuMessage: (@Composable (onClick: () -> Unit) -> Unit)? = null
 
     fun resetMenuMessage() {
@@ -110,8 +116,9 @@ class TrainingViewModel @Inject constructor(
     @RequiresApi(Build.VERSION_CODES.O)
     fun startRoutine() {
         _training.value = Training(LocalDate.now(), mutableListOf(), _routine.value, false)
+        historicalExercises.clear()
         if (_routine.value != null) NavigateManager.navigateTo(GimScreens.NextExercise)
-        else NavigateManager.navigateTo(GimScreens.AddExerciseToTraining)
+        else navigateToAddExerciseToTraining()
     }
 
     fun getActualExerciseRoutine(): ExerciseRoutine {
@@ -220,10 +227,14 @@ class TrainingViewModel @Inject constructor(
     }
 
     private fun passActualSet(noLastCode: () -> Unit) {
+        Log.d("DEV", "remainingExerciseSets: ${remainingExerciseSets.value}")
         _remainingExerciseSets.value = _remainingExerciseSets.value!! - 1
         if (_remainingExerciseSets.value == 0) {
             if (_actualTrainingExercise.value!!.sets.isNotEmpty()) {
                 _training.value!!.exercises.add(_actualTrainingExercise.value!!)
+                historicalExercises.add(ExerciseRoutineHistorical(_actualExericseRoutine.value!!, false))
+            } else {
+                historicalExercises.add(ExerciseRoutineHistorical(_actualExericseRoutine.value!!, true))
             }
             goNextExerciseInTraining()
         } else {
@@ -232,10 +243,13 @@ class TrainingViewModel @Inject constructor(
         updateSetState()
     }
 
-    @SuppressLint("NewApi")
-    fun previusSet() {
+    fun previousSet() {
+
+    }
+
+    private fun removeLastSet() {
         _remainingExerciseSets.value = _remainingExerciseSets.value!! + 1
-        _actualTrainingExercise.value!!.sets.removeLast()
+        _actualTrainingExercise.value!!.sets.removeLastOrNull()
         updateSetState()
     }
 
@@ -244,13 +258,27 @@ class TrainingViewModel @Inject constructor(
         updateSetState()
     }
 
-    fun goNextExerciseInTraining() {
+    fun navigateToAddExerciseToTraining() {
+        NavigateManager.navigateTo(GimScreens.AddExerciseToTraining)
+    }
+
+    fun navigateToNextExerciseSinceAddExercise() {
+        NavigateManager.navigateTo(GimScreens.NextExercise)
+        historicalExercises.add(null)
+    }
+
+    fun skipExerciseInTraining() {
+        historicalExercises.add(ExerciseRoutineHistorical(_actualExericseRoutine.value!!, true))
+        goNextExerciseInTraining()
+    }
+
+    private fun goNextExerciseInTraining() {
         setNextActualExerciseRoutine()
         if (_actualExericseRoutine.value != null) {
-            NavigateManager.navigateTo(GimScreens.NextExercise)
+            NavigateManager.navigateCleaningNavigation(GimScreens.NextExercise)
         } else if (_training.value!!.exercises.isEmpty()) {
             setMenuMessage("El entrenamiento está vacío\nNo se ha guardado")
-            NavigateManager.navigateTo(GimScreens.Start)
+            NavigateManager.navigateCleaningNavigation(GimScreens.Start)
         } else {
             NavigateManager.navigateTo(GimScreens.EndRoutine)
         }
@@ -288,7 +316,7 @@ class TrainingViewModel @Inject constructor(
             db.saveTraining(_training.value!!)
         }
         setMenuMessage("El entrenamiento se ha guardado correctamente")
-        NavigateManager.navigateTo(GimScreens.Start)
+        NavigateManager.navigateCleaningNavigation(GimScreens.Start)
     }
 
     fun closeChangedRutineDialog() {
@@ -466,6 +494,84 @@ class TrainingViewModel @Inject constructor(
                     showToast("El ejercicio que estas intentando añadir ya existe", context)
                 }
             )
+        }
+    }
+
+    fun goBackInNextExerciseView(context: Context) {
+        /*
+        Casos posibles
+            - Venir desde el selector de ejercicio
+                -> Volver al selector de ejercicio
+            - Venir desde el selector de rutina
+                -> Ir al selector de rutina
+            - Venir desde otro ejercicio saltado
+                -> Ir al ejercicio anterior
+            - Venir como siguiente ejericico de una rutina
+         */
+        if (historicalExercises.isEmpty() ) {
+            NavigateManager.popLastScreen()
+        } else {
+            val last = historicalExercises.removeLastOrNull()
+            if (last == null) {
+                NavigateManager.navigateTo(GimScreens.AddExerciseToTraining)
+            } else {
+                goBackCheckingIfIsSkippedOrEndingExercise(last, context)
+            }
+        }
+    }
+
+    fun goBackInAddExerciseToTraining() {
+        /*
+        Casos posibles:
+            - Venir de empezar una rutina
+                -> Vovler al selector de rutina
+            - Venir de hacer otro ejercicio de la rutina
+                -> Volver para atras
+            - Venir de añadir un ejercicio al final de la rutina
+                -> Volver para atras
+        */
+        if (historicalExercises.isEmpty()) {
+            NavigateManager.navigateCleaningNavigation(GimScreens.SelectRoutine)
+        } else {
+            NavigateManager.popLastScreen()
+        }
+    }
+
+    fun goBackInEndRoutine(context: Context) {
+        /*
+        Casos posibles
+            - Venir desde saltar ejercicio
+                -> Volver al selector de ejercicio
+            - Venir desde acabar ejercicio
+                -> Ir al selector de rutina
+         */
+        val last = historicalExercises.removeLastOrNull()!!
+        goBackCheckingIfIsSkippedOrEndingExercise(last, context)
+    }
+
+    fun goBackInAddSet(context: Context) {
+        /*
+        Casos posibles
+            - Aun quedan series
+            - Sin series
+        */
+        if (_actualTrainingExercise.value!!.sets.isNotEmpty()) {
+            removeLastSet()
+            ToastManager.showToast("Se ha eliminado la última serie", context)
+        } else {
+            NavigateManager.popLastScreen()
+        }
+    }
+
+    private fun goBackCheckingIfIsSkippedOrEndingExercise(last: ExerciseRoutineHistorical, context: Context) {
+        _actualExericseRoutine.value = last.exercise
+        if (last.skipped) {
+            NavigateManager.navigateCleaningNavigation(GimScreens.NextExercise)
+        } else {
+            _actualTrainingExercise.value = _training.value!!.exercises.removeLastOrNull()!!
+            removeLastSet()
+            NavigateManager.navigateTo(GimScreens.OnSet)
+            ToastManager.showToast("Se ha eliminado la última serie", context)
         }
     }
 

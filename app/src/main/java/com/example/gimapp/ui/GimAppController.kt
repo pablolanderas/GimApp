@@ -29,7 +29,7 @@ import com.example.gimapp.ui.views.GimScreens
 import com.example.gimapp.ui.views.exercises.ExerciseInfo
 import com.example.gimapp.ui.views.exercises.SeeExercises
 import com.example.gimapp.views.addTraining.AddExerciseToTraining
-import com.example.gimapp.views.addTraining.AddSet
+import com.example.gimapp.ui.views.addTraining.AddSet
 import com.example.gimapp.views.addTraining.DialogChangedRoutine
 import com.example.gimapp.views.addTraining.DialogNameTraining
 import com.example.gimapp.views.addTraining.EndRoutine
@@ -55,7 +55,7 @@ class GimAppController(
     fun StartApp() {
 
         navController = rememberNavController()
-        NavigateManager.setNavigate { navController.navigate(it) }
+        NavigateManager.setNavigate(navController)
 
         NavHost(
             navController = navController,
