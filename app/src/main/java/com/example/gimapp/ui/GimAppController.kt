@@ -30,6 +30,7 @@ import com.example.gimapp.ui.views.exercises.ExerciseInfo
 import com.example.gimapp.ui.views.exercises.SeeExercises
 import com.example.gimapp.views.addTraining.AddExerciseToTraining
 import com.example.gimapp.ui.views.addTraining.AddSet
+import com.example.gimapp.ui.views.historical.SeeTraining
 import com.example.gimapp.views.addTraining.DialogChangedRoutine
 import com.example.gimapp.views.addTraining.DialogNameTraining
 import com.example.gimapp.views.addTraining.EndRoutine
@@ -95,18 +96,7 @@ class GimAppController(
                 ShowHistorical(historicalViewModel)
             }
             composable(route = GimScreens.SeeTraining.name) {
-                var exercises = emptyList<Exercise>()
-                CoroutineScope(Dispatchers.IO).launch {
-                    exercises = emptyList() // TODO
-                }
-                Text(
-                    "$exercises",
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .fillMaxHeight()
-                        .padding(top = 300.dp)
-                )
+                SeeTraining(historicalViewModel)
             }
             composable(route = GimScreens.SeeExercises.name) {
                 SeeExercises(exercisesViewModel)
