@@ -86,6 +86,8 @@ class TrainingViewModel @Inject constructor(
     val showAddMode: LiveData<Boolean> = _showAddMode
     private val _showAddExercise = MutableLiveData<Boolean>()
     val showAddExercise: LiveData<Boolean> = _showAddExercise
+    private val _trainingStartedBefore = MutableLiveData<Boolean>()
+    val trainingStartedBefore: LiveData<Boolean> = _trainingStartedBefore
 
     data class ExerciseRoutineHistorical(
         val exercise: ExerciseRoutine,
@@ -133,6 +135,7 @@ class TrainingViewModel @Inject constructor(
 
     private fun setNextActualExerciseRoutine() {
         if (_actualExerciseRoutine.value == actualExerciseRoutineByIndex()) {
+            Log.d("DEV", "LLEGA AL IF")
             if (actualRoutineExerciseRoutineIndexIsLast()) {
                 _actualExerciseRoutine.value = null
             } else {
@@ -141,6 +144,7 @@ class TrainingViewModel @Inject constructor(
                 _actualExerciseRoutine.value = actualExerciseRoutineByIndex()
             }
         } else {
+            Log.d("DEV", "LLEGA AL ELSE")
             if (actualRoutineExerciseRoutineIndexIsLast()) {
                 _actualExerciseRoutine.value = null
             } else {
@@ -235,7 +239,6 @@ class TrainingViewModel @Inject constructor(
     }
 
     private fun passActualSet(noLastCode: () -> Unit) {
-        Log.d("DEV", "remainingExerciseSets: ${remainingExerciseSets.value}")
         _remainingExerciseSets.value = _remainingExerciseSets.value!! - 1
         if (_remainingExerciseSets.value == 0) {
             if (_actualTrainingExercise.value!!.sets.isNotEmpty()) {
@@ -668,8 +671,6 @@ class TrainingViewModel @Inject constructor(
     @RequiresApi(Build.VERSION_CODES.O)
     fun restoreTrainingDataPreferences() {
 
-        Log.d("DEV", "Entra")
-
         suspend fun parseExerciseRoutine(text: String): ExerciseRoutine {
             val parts = text.split("~~")
             if (parts.size != 5) throw Error("Incorrect exercise routine '$text' does not correct")
@@ -690,8 +691,6 @@ class TrainingViewModel @Inject constructor(
         viewModelScope.launch {
 
             val savedText: String = preferencesManager.trainingData.first() ?: throw Error("Not training save")
-
-            Log.d("DEV", "Llega con texto '$savedText'")
 
             val parts = savedText.split(ESPACER)
             if (parts.size < 7) throw Error("Invalid values")
@@ -762,7 +761,6 @@ class TrainingViewModel @Inject constructor(
                 ?.map {
                     if (it == "x") null
                     else {
-                        Log.d("DEV", "ANTES: '$it'")
                         val parts = it.split("~~")
                         ExerciseRoutineHistorical(
                             parseExerciseRoutine(parts.dropLast(1).joinToString("~~")),
@@ -774,14 +772,27 @@ class TrainingViewModel @Inject constructor(
                 ?: mutableListOf()
 
             // Navigate to the correct window
+            _trainingStartedBefore.value = false
             updateExerciseHistorical()
             NavigateManager.navigateTo(GimScreens.SelectRoutine)
             NavigateManager.navigateTo(GimScreens.NextExercise)
             if (_actualTrainingExercise.value!!.sets.isNotEmpty()) {
-                Log.d("DEV", "Entra en onset")
                 NavigateManager.navigateTo(GimScreens.OnSet)
             }
         }
+    }
+
+    fun checkTrainingDataPreferences() {
+
+        viewModelScope.launch {
+            val savedText: String = preferencesManager.trainingData.first() ?: ""
+            _trainingStartedBefore.value = savedText != ""
+        }
+
+    }
+
+    fun closeDialogTrainingStartedBefore() {
+        _trainingStartedBefore.value = false
     }
 
 }

@@ -1,5 +1,6 @@
 package com.example.gimapp.ui.views.addTraining
 
+import android.icu.text.DecimalFormat
 import android.os.Build
 import android.util.Log
 import androidx.activity.compose.BackHandler
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -65,6 +67,12 @@ import com.example.gimapp.data.database.DataBase
 import com.example.gimapp.data.database.daos.DaosDatabase_Impl
 import com.example.gimapp.domain.ExerciseSet
 import com.example.gimapp.domain.MuscularGroup
+import com.example.gimapp.ui.views.exercises.HistoricalElement
+import com.example.gimapp.ui.views.exercises.LISTA_ENTRENOS
+import com.example.gimapp.ui.views.exercises.NULL_EXERCISE
+import com.example.gimapp.ui.views.exercises.RowHistorical
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
 fun TitleRow(
@@ -115,41 +123,61 @@ fun TitleRow(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun InfoDialog(
-    exercise: Exercise
+    exercise: Exercise,
+    exerciseHistorical: List<TrainingExercise>
 ) {
+
     Dialog(onDismissRequest = { }) {
-        // El contenido del diálogo
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.White, RoundedCornerShape(10.dp))
+                .background(
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = RoundedCornerShape(10.dp)
+                )
                 .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = exercise.name.replaceFirstChar { it.uppercase() },
-                style = TextStyle(
-                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
-                    fontWeight = FontWeight.Bold
-                )
-            )
+
             Text(
                 text = exercise.mode.replaceFirstChar { it.uppercase() },
-                style = TextStyle(
-                    fontSize = MaterialTheme.typography.bodyLarge.fontSize
-                ),
+                style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier
-                    .padding(vertical = 15.dp)
+                    .padding(vertical = 10.dp)
             )
-            Image(
-                painter = painterResource(id = exercise.imgURI ?: R.drawable.image),
-                contentDescription = "Information botton",
+            Box(
                 modifier = Modifier
-                    .size(200.dp)
-            )
+                    .padding(
+                        vertical = 15.dp,
+                        horizontal = 5.dp
+                    )
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.secondary,
+                        shape = RoundedCornerShape(20.dp)
+                    )
+            ) {
+                LazyColumn (
+                    modifier = Modifier
+                        .padding(
+                            horizontal = 7.dp,
+                            vertical = 10.dp
+                        )
+                ) {
+                    items(exerciseHistorical) {
+                        HistoricalElement(
+                            it,
+                            Modifier.padding(vertical = 5.dp)
+                        )
+                    }
+                }
+            }
+
         }
     }
 }
@@ -464,6 +492,7 @@ fun AddSet(
         initial = TrainingExercise(Exercise("","",MuscularGroup.Abs), null, mutableListOf<ExerciseSet>())
     )
     val state: AddSetState by viewModel.stateOfAddSet.observeAsState(initial = AddSetState.Normal)
+    val exerciseHistorical: List<TrainingExercise> by viewModel.historical.observeAsState(initial = emptyList())
     viewModel.startTimer()
 
     BackHandler { viewModel.goBackInAddSet(context) }
@@ -474,7 +503,8 @@ fun AddSet(
         var showDialog by remember { mutableStateOf(false) }
         if (showDialog)
             InfoDialog(
-                exercise = viewModel.getActualExerciseRoutine().exercise
+                exercise = viewModel.getActualExerciseRoutine().exercise,
+                exerciseHistorical
             )
         TitleRow(
             viewModel.getActualExerciseRoutine(),
@@ -559,11 +589,6 @@ fun AddSet(
 @Composable
 fun PrevieAddSet() {
     GimAppTheme {
-        if (false) {
-            InfoDialog(
-                exercise = Exercise("press banca", "con banca", imgURI = R.drawable.press_banca)
-            )
-        }
         AddSet(TrainingViewModel(DataBase(DaosDatabase_Impl())))
     }
 }

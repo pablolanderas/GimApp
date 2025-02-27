@@ -11,6 +11,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,6 +27,7 @@ import com.example.gimapp.data.database.daos.DaosDatabase_Impl
 import com.example.gimapp.ui.theme.GimAppTheme
 import com.example.gimapp.ui.viewModels.managers.NavigateManager
 import com.example.gimapp.ui.views.GimScreens
+import com.example.gimapp.ui.views.menu.DialogGoToOldTraining
 
 @Composable
 fun MenuButton(
@@ -55,7 +59,14 @@ fun MenuButton(
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainMenu(viewModel: TrainingViewModel) {
+
     val context = LocalContext.current
+    val showDialogTrainingStarted by viewModel.trainingStartedBefore.observeAsState(false)
+
+    LaunchedEffect(Unit) { viewModel.checkTrainingDataPreferences() }
+
+    if (showDialogTrainingStarted) DialogGoToOldTraining(viewModel)
+
     Header(
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -64,7 +75,7 @@ fun MainMenu(viewModel: TrainingViewModel) {
         MenuButton(text = "Historial") { NavigateManager.navigateTo(GimScreens.Historical) }
         MenuButton(text = "Rutinas") { NavigateManager.navigateTo(GimScreens.SeeRoutines) }
         MenuButton(text = "Ejercicios") { NavigateManager.navigateTo(GimScreens.SeeExercises) }
-        MenuButton(text = "Ajustes" ) { viewModel.restoreTrainingDataPreferences() }
+        MenuButton(text = "Ajustes" ) {  }
     }
 }
 

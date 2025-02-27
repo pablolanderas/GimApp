@@ -35,6 +35,21 @@ class ExerciseRoutine(
     fun isReal() : Boolean {
         return sets > 0 && minReps > 0 && maxReps > 0 && minReps <= maxReps
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true // Son la misma instancia
+        if (other !is ExerciseRoutine) return false // No es del mismo tipo
+
+        return this.exercise.name == other.exercise.name &&
+                this.exercise.mode == other.exercise.mode &&
+                this.sets == other.sets &&
+                this.minReps == other.minReps &&
+                this.maxReps == other.maxReps
+    }
+
+    override fun hashCode(): Int {
+        return listOf(exercise.name, exercise.mode, sets, minReps, maxReps).hashCode()
+    }
 }
 
 class Routine(
