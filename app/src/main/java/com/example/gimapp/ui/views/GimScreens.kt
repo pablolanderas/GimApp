@@ -11,5 +11,7 @@ enum class GimScreens() {
     SeeTraining,
 
     SeeExercises,
-    ExerciseInfo
+    ExerciseInfo,
+
+    SeeRoutines
 }

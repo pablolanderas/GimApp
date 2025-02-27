@@ -1,6 +1,7 @@
 package com.example.gimapp.ui
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -14,16 +15,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.gimapp.data.database.preferences.PreferencesManager
 import com.example.gimapp.ui.viewModels.TrainingViewModel
 import com.example.gimapp.domain.Exercise
 import com.example.gimapp.ui.viewModels.ExercisesViewModel
 import com.example.gimapp.ui.viewModels.HistoricalViewModel
+import com.example.gimapp.ui.viewModels.RoutinesViewModel
 import com.example.gimapp.ui.viewModels.managers.NavigateManager
 import com.example.gimapp.ui.views.GimScreens
 import com.example.gimapp.ui.views.exercises.ExerciseInfo
@@ -31,6 +35,7 @@ import com.example.gimapp.ui.views.exercises.SeeExercises
 import com.example.gimapp.views.addTraining.AddExerciseToTraining
 import com.example.gimapp.ui.views.addTraining.AddSet
 import com.example.gimapp.ui.views.historical.SeeTraining
+import com.example.gimapp.ui.views.routine.SeeRoutines
 import com.example.gimapp.views.addTraining.DialogChangedRoutine
 import com.example.gimapp.views.addTraining.DialogNameTraining
 import com.example.gimapp.views.addTraining.EndRoutine
@@ -46,6 +51,7 @@ class GimAppController(
     private val trainingViewModel: TrainingViewModel,
     private val historicalViewModel: HistoricalViewModel,
     private val exercisesViewModel: ExercisesViewModel,
+    private val routinesViewModel: RoutinesViewModel
 ) {
 
     private lateinit var navController: NavHostController
@@ -54,6 +60,10 @@ class GimAppController(
     @RequiresApi(Build.VERSION_CODES.O)
     @Composable
     fun StartApp() {
+
+        // Set context
+        val context: Context = LocalContext.current
+        trainingViewModel.setPreferencesManager(PreferencesManager(context))
 
         navController = rememberNavController()
         NavigateManager.setNavigate(navController)
@@ -103,6 +113,9 @@ class GimAppController(
             }
             composable(route = GimScreens.ExerciseInfo.name) {
                 ExerciseInfo(exercisesViewModel)
+            }
+            composable(route = GimScreens.SeeRoutines.name) {
+                SeeRoutines(routinesViewModel)
             }
         }
     }

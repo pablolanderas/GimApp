@@ -29,7 +29,7 @@ import com.example.gimapp.ui.theme.GimAppTheme
 
 @Composable
 fun DialogChangedRoutine(viewModel: TrainingViewModel) {
-    Dialog(onDismissRequest = { viewModel.closeChangedRutineDialog() }) {
+    Dialog(onDismissRequest = { viewModel.closeChangedRoutineDialog() }) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()

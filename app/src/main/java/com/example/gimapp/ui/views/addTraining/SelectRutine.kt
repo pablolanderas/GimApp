@@ -1,10 +1,7 @@
 package com.example.gimapp.views.addTraining
 
 import android.os.Build
-import android.util.Log
-import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -51,11 +48,12 @@ import com.example.gimapp.ui.theme.GimAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DropListRutine(
+fun DropListRooutine(
     options: List<Routine>,
     selectedOption: Routine?,
     selected: Boolean,
-    optionSelected: (Routine?) -> Unit
+    optionSelected: (Routine?) -> Unit,
+    lastOption: Boolean = true
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -80,7 +78,7 @@ fun DropListRutine(
             onExpandedChange = { expanded = !expanded }
         ) {
             TextField(
-                value = selectedOption?.name ?: if (!selected) "Seleccione una rutina" else "Entrenamiento libre",
+                value = selectedOption?.name?.replaceFirstChar { it.uppercase() } ?: if (!selected) "Seleccione una rutina" else "Entrenamiento libre",
                 onValueChange = { },
                 readOnly = true,
                 textStyle = MaterialTheme.typography.bodyMedium.copy(
@@ -135,20 +133,22 @@ fun DropListRutine(
                         },
                     )
                 }
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = "--- Entrenamiento libre ---",
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    },
-                    onClick = {
-                        optionSelected(null)
-                        expanded = false
-                    }
-                )
+                if (lastOption) {
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = "--- Entrenamiento libre ---",
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        },
+                        onClick = {
+                            optionSelected(null)
+                            expanded = false
+                        }
+                    )
+                }
             }
         }
     }
@@ -232,7 +232,7 @@ fun SelectRoutine(viewModel: TrainingViewModel) {
 
                 Spacer(modifier = Modifier.weight(verticalMargin))
 
-                DropListRutine(
+                DropListRooutine(
                     options = routines,
                     selectedOption = selectedOption,
                     selected = selected,

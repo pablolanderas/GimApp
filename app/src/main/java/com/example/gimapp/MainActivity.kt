@@ -11,6 +11,7 @@ import androidx.annotation.RequiresApi
 import com.example.gimapp.ui.theme.GimAppTheme
 import com.example.gimapp.ui.viewModels.ExercisesViewModel
 import com.example.gimapp.ui.viewModels.HistoricalViewModel
+import com.example.gimapp.ui.viewModels.RoutinesViewModel
 import com.example.gimapp.ui.viewModels.TrainingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -22,6 +23,7 @@ class MainActivity : ComponentActivity() {
     private val trainingViewModel: TrainingViewModel by viewModels<TrainingViewModel>()
     private val historicalViewModel: HistoricalViewModel by viewModels<HistoricalViewModel>()
     private val exercisesViewModel: ExercisesViewModel by viewModels<ExercisesViewModel>()
+    private val routinesViewModel: RoutinesViewModel by viewModels<RoutinesViewModel>()
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,7 +33,8 @@ class MainActivity : ComponentActivity() {
         val controller = GimAppController(
             trainingViewModel,
             historicalViewModel,
-            exercisesViewModel
+            exercisesViewModel,
+            routinesViewModel
         )
 
         setContent {

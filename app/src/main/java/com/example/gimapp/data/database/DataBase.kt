@@ -48,6 +48,16 @@ class DataBase @Inject constructor(
         return routines
     }
 
+    suspend fun getRoutineById(id: Long): Routine {
+        val routine = daos.getRoutineDao().getRoutineById(id).toDomain()
+        val exercises: MutableMap<Long, Exercise> = mutableMapOf()
+        daos.getRoutineDao().getAllExerciseRoutine(id).forEach {
+            updateExerciseDictIfNotContains(it.exerciseFk, exercises)
+            routine.exercises.add(it.toDomain(exercises[it.exerciseFk]!!))
+        }
+        return routine
+    }
+
     private suspend fun getRoutineById(id: Long, exercises: MutableMap<Long, Exercise>): Routine {
         val routine = daos.getRoutineDao().getRoutineById(id).toDomain()
         daos.getRoutineDao().getAllExerciseRoutine(id).forEach {
@@ -123,6 +133,11 @@ class DataBase @Inject constructor(
             daos.getExerciseDao().insertExercise(ExerciseEntity.fromDomain(e))
         }
         daos.getExerciseDao().insertMode(ModeEntity(exerciseFk=e.name, mode=e.mode))
+    }
+
+    suspend fun getExercise(name: String, mode: String): Exercise? {
+        if (daos.getExerciseDao().getModeId(name, mode) == null) return null
+        return daos.getExerciseDao().getByName(name)!!.toDomain(mode)
     }
 
     suspend fun getExercisesByMuscle(m: MuscularGroup): List<Exercise> {

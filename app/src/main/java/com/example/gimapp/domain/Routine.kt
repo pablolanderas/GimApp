@@ -19,7 +19,7 @@ enum class MuscularGroup(
 
 }
 
-class Exercise(
+data class Exercise(
     val name: String,
     var mode: String,
     val muscle: MuscularGroup = MuscularGroup.Chest,

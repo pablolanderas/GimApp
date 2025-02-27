@@ -12,7 +12,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.gimapp.data.database.DataBase
+import com.example.gimapp.data.database.preferences.PreferencesManager
 import com.example.gimapp.domain.Exercise
 import com.example.gimapp.domain.ExerciseRoutine
 import com.example.gimapp.domain.ExerciseSet
@@ -29,6 +31,7 @@ import com.example.gimapp.ui.views.addTraining.AddSetState
 import com.example.gimapp.views.menu.MenuMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
@@ -47,7 +50,7 @@ class TrainingViewModel @Inject constructor(
     private val _training = MutableLiveData<Training>()
     val training: LiveData<Training> = _training
     private val _actualRoutineExerciseRoutineIndex = MutableLiveData<Int>()
-    private val _actualExericseRoutine =
+    private val _actualExerciseRoutine =
         MutableLiveData<ExerciseRoutine?>() // null quiere decir que no quedan mas ejericicos
     private val _actualTrainingExercise = MutableLiveData<TrainingExercise>()
     val actualTrainingExercise: LiveData<TrainingExercise> = _actualTrainingExercise
@@ -73,7 +76,7 @@ class TrainingViewModel @Inject constructor(
     val exercises: LiveData<List<Exercise>> = _exercises
     private val _routines = MutableLiveData<List<Routine>>()
     val routines: LiveData<List<Routine>> = _routines
-    private val _historical = MutableLiveData<List<TrainingExercise>>()
+    private val _historical = MutableLiveData<List<TrainingExercise>>(listOf())
     val historical: LiveData<List<TrainingExercise>> = _historical
     private val _modes = MutableLiveData<List<String>>()
     val modes: LiveData<List<String>> = _modes
@@ -88,9 +91,11 @@ class TrainingViewModel @Inject constructor(
         val exercise: ExerciseRoutine,
         val skipped: Boolean
     )
-    private val historicalExercises: MutableList<ExerciseRoutineHistorical?> = mutableListOf()
+    private var historicalExercises: MutableList<ExerciseRoutineHistorical?> = mutableListOf()
 
     private var menuMessage: (@Composable (onClick: () -> Unit) -> Unit)? = null
+
+    private lateinit var preferencesManager: PreferencesManager
 
     fun resetMenuMessage() {
         menuMessage = null
@@ -106,7 +111,7 @@ class TrainingViewModel @Inject constructor(
     fun setRoutine(r: Routine?) {
         _routine.value = r
         _actualRoutineExerciseRoutineIndex.value = 0
-        _actualExericseRoutine.value = r?.exercises?.get(0)
+        _actualExerciseRoutine.value = r?.exercises?.get(0)
     }
 
     fun setSelected() {
@@ -122,24 +127,24 @@ class TrainingViewModel @Inject constructor(
     }
 
     fun getActualExerciseRoutine(): ExerciseRoutine {
-        return _actualExericseRoutine.value
+        return _actualExerciseRoutine.value
             ?: NULABLE_ROUTINE_EXERCISE
     }
 
     private fun setNextActualExerciseRoutine() {
-        if (_actualExericseRoutine.value == actualExerciseRoutineByIndex()) {
+        if (_actualExerciseRoutine.value == actualExerciseRoutineByIndex()) {
             if (actualRoutineExerciseRoutineIndexIsLast()) {
-                _actualExericseRoutine.value = null
+                _actualExerciseRoutine.value = null
             } else {
                 _actualRoutineExerciseRoutineIndex.value =
                     _actualRoutineExerciseRoutineIndex.value!! + 1
-                _actualExericseRoutine.value = actualExerciseRoutineByIndex()
+                _actualExerciseRoutine.value = actualExerciseRoutineByIndex()
             }
         } else {
             if (actualRoutineExerciseRoutineIndexIsLast()) {
-                _actualExericseRoutine.value = null
+                _actualExerciseRoutine.value = null
             } else {
-                _actualExericseRoutine.value = actualExerciseRoutineByIndex()
+                _actualExerciseRoutine.value = actualExerciseRoutineByIndex()
             }
         }
     }
@@ -158,16 +163,17 @@ class TrainingViewModel @Inject constructor(
         if (actualRoutineExerciseRoutineIndexIsLast()) {
             _actualRoutineExerciseRoutineIndex.value = -1
         }
-        _actualExericseRoutine.value = e
+        _actualExerciseRoutine.value = e
         goNextExercise()
+        updateTrainingDataPreferences()
     }
 
     fun startActualExerciseRoutine() {
         // Initialize the data
         _actualTrainingExercise.value = TrainingExercise(
-            _actualExericseRoutine.value!!.exercise, null, mutableListOf()
+            _actualExerciseRoutine.value!!.exercise, null, mutableListOf()
         )
-        _remainingExerciseSets.value = _actualExericseRoutine.value!!.sets
+        _remainingExerciseSets.value = _actualExerciseRoutine.value!!.sets
         updateSetState()
         NavigateManager.navigateTo(GimScreens.OnSet)
     }
@@ -215,6 +221,7 @@ class TrainingViewModel @Inject constructor(
                 )
                 startTimer()
             }
+            updateTrainingDataPreferences()
         } else {
             showToast("Rellena los datos correctamente", context)
         }
@@ -224,6 +231,7 @@ class TrainingViewModel @Inject constructor(
         passActualSet {
             showToast("Se ha saltado correctamente", context)
         }
+        updateTrainingDataPreferences()
     }
 
     private fun passActualSet(noLastCode: () -> Unit) {
@@ -232,11 +240,12 @@ class TrainingViewModel @Inject constructor(
         if (_remainingExerciseSets.value == 0) {
             if (_actualTrainingExercise.value!!.sets.isNotEmpty()) {
                 _training.value!!.exercises.add(_actualTrainingExercise.value!!)
-                historicalExercises.add(ExerciseRoutineHistorical(_actualExericseRoutine.value!!, false))
+                historicalExercises.add(ExerciseRoutineHistorical(_actualExerciseRoutine.value!!, false))
             } else {
-                historicalExercises.add(ExerciseRoutineHistorical(_actualExericseRoutine.value!!, true))
+                historicalExercises.add(ExerciseRoutineHistorical(_actualExerciseRoutine.value!!, true))
             }
             goNextExerciseInTraining()
+            _actualTrainingExercise.value = TrainingExercise(_actualTrainingExercise.value!!.exercise, null, mutableListOf())
         } else {
             noLastCode()
         }
@@ -251,11 +260,13 @@ class TrainingViewModel @Inject constructor(
         _remainingExerciseSets.value = _remainingExerciseSets.value!! + 1
         _actualTrainingExercise.value!!.sets.removeLastOrNull()
         updateSetState()
+        updateTrainingDataPreferences()
     }
 
     fun addExtraSet() {
         _remainingExerciseSets.value = _remainingExerciseSets.value!! + 1
         updateSetState()
+        updateTrainingDataPreferences()
     }
 
     fun navigateToAddExerciseToTraining() {
@@ -268,13 +279,14 @@ class TrainingViewModel @Inject constructor(
     }
 
     fun skipExerciseInTraining() {
-        historicalExercises.add(ExerciseRoutineHistorical(_actualExericseRoutine.value!!, true))
+        historicalExercises.add(ExerciseRoutineHistorical(_actualExerciseRoutine.value!!, true))
         goNextExerciseInTraining()
+        updateTrainingDataPreferences()
     }
 
     private fun goNextExerciseInTraining() {
         setNextActualExerciseRoutine()
-        if (_actualExericseRoutine.value != null) {
+        if (_actualExerciseRoutine.value != null) {
             NavigateManager.navigateCleaningNavigation(GimScreens.NextExercise)
         } else if (_training.value!!.exercises.isEmpty()) {
             setMenuMessage("El entrenamiento está vacío\nNo se ha guardado")
@@ -299,14 +311,14 @@ class TrainingViewModel @Inject constructor(
 
     fun saveTrainWithoutRoutine() {
         _training.value!!.routine = null
-        closeChangedRutineDialog()
+        closeChangedRoutineDialog()
         closeNoRoutineDialog()
         saveTrain()
     }
 
     fun saveRoutineModification() {
         _training.value!!.modifiedRoutine = true
-        closeChangedRutineDialog()
+        closeChangedRoutineDialog()
         closeNoRoutineDialog()
         saveTrain()
     }
@@ -315,11 +327,12 @@ class TrainingViewModel @Inject constructor(
         viewModelScope.launch {
             db.saveTraining(_training.value!!)
         }
+        clearTrainingDataPreferences()
         setMenuMessage("El entrenamiento se ha guardado correctamente")
         NavigateManager.navigateCleaningNavigation(GimScreens.Start)
     }
 
-    fun closeChangedRutineDialog() {
+    fun closeChangedRoutineDialog() {
         _showChangesPopUp.value = false
     }
 
@@ -328,7 +341,7 @@ class TrainingViewModel @Inject constructor(
     }
 
     fun tryToCreateNewRoutine() {
-        closeChangedRutineDialog()
+        closeChangedRoutineDialog()
         _showSaveWithoutName.value = false
         _showNoRutinePopUp.value = true
     }
@@ -364,10 +377,10 @@ class TrainingViewModel @Inject constructor(
     }
 
     fun updateExerciseHistorical() {
-        if (_actualExericseRoutine.value != null) {
+        if (_actualExerciseRoutine.value != null) {
             viewModelScope.launch() {
                 _historical.value =
-                    db.getExerciseTrainings(_actualExericseRoutine.value!!.exercise)
+                    db.getExerciseTrainings(_actualExerciseRoutine.value!!.exercise)
             }
         }
     }
@@ -510,6 +523,7 @@ class TrainingViewModel @Inject constructor(
          */
         if (historicalExercises.isEmpty() ) {
             NavigateManager.popLastScreen()
+            clearTrainingDataPreferences()
         } else {
             val last = historicalExercises.removeLastOrNull()
             if (last == null) {
@@ -564,14 +578,209 @@ class TrainingViewModel @Inject constructor(
     }
 
     private fun goBackCheckingIfIsSkippedOrEndingExercise(last: ExerciseRoutineHistorical, context: Context) {
-        _actualExericseRoutine.value = last.exercise
+        _actualExerciseRoutine.value = last.exercise
         if (last.skipped) {
             NavigateManager.navigateCleaningNavigation(GimScreens.NextExercise)
         } else {
             _actualTrainingExercise.value = _training.value!!.exercises.removeLastOrNull()!!
+            _remainingExerciseSets.value = 0
             removeLastSet()
             NavigateManager.navigateTo(GimScreens.OnSet)
             ToastManager.showToast("Se ha eliminado la última serie", context)
+        }
+    }
+
+    fun setPreferencesManager(p: PreferencesManager) {
+        preferencesManager = p
+    }
+
+    private val ESPACER = "||"
+
+    private fun clearTrainingDataPreferences() {
+        viewModelScope.launch { preferencesManager.saveData("") }
+    }
+
+    private fun updateTrainingDataPreferences() {
+
+        fun exerciseRoutineToText(e: ExerciseRoutine): String {
+            return "${e.exercise.name}~~${e.exercise.mode}~~${e.sets}~~${e.minReps}~~${e.maxReps}"
+        }
+
+        /*
+        ActualRoutine:
+        Training:
+        RoutineExerciseIndex:
+        ActualExerciseRoutine
+        ActualTrainingExercise
+        RemainingSets
+        HistoricalExercises
+         */
+
+        viewModelScope.launch {
+            var text = ""
+
+            // Actual routine (by id or 0 if is null)
+            text += _routine.value?.id ?: 0
+
+            text += ESPACER
+            // Actual training (for each exercise name~~mode~~(for each set)weightxreps)
+            _training.value!!.exercises.forEachIndexed { firstIndex, exercise ->
+                if (firstIndex != 0) text += ",,"
+                text += "${exercise.exercise.name}~~${exercise.exercise.mode}~~"
+                exercise.sets.forEachIndexed { secondIndex, set ->
+                    if (secondIndex != 0) text += ","
+                    text += "${set.weight}x${set.reps}"
+                }
+            }
+
+            text += ESPACER
+            // Routine exercise index
+            text += _actualRoutineExerciseRoutineIndex.value!!
+
+            text += ESPACER
+            // Actual exercise routine (name~~mode~~sets~~minReps~~maxReps)
+            text += exerciseRoutineToText(_actualExerciseRoutine.value!!)
+
+            text += ESPACER
+            // Actual training exercise for each set(weightxreps)
+            _actualTrainingExercise.value!!.sets.forEachIndexed { index, set ->
+                if (index != 0) text += ","
+                text += "${set.weight}x${set.reps}"
+            }
+
+            text += ESPACER
+            // Remaining sets
+            text += _remainingExerciseSets.value!!
+
+            text += ESPACER
+            // Historical of exercises screens for each (name~~mode~~sets~~minReps~~maxReps~~t or f)
+            historicalExercises.forEachIndexed { index, exercise ->
+                if (index != 0) text += ",,"
+                text += if (exercise != null) exerciseRoutineToText(exercise.exercise) else "x"
+                if (exercise != null) text += "~~" + if (exercise.skipped) "t" else "f"
+            }
+
+            // Save the data
+            preferencesManager.saveData(text)
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun restoreTrainingDataPreferences() {
+
+        Log.d("DEV", "Entra")
+
+        suspend fun parseExerciseRoutine(text: String): ExerciseRoutine {
+            val parts = text.split("~~")
+            if (parts.size != 5) throw Error("Incorrect exercise routine '$text' does not correct")
+            val name = parts[0]
+            val mode = parts[1]
+            val sets = parts[2].toIntOrNull() ?: 0
+            val minReps = parts[3].toIntOrNull() ?: 0
+            val maxReps = parts[4].toIntOrNull() ?: 0
+            return ExerciseRoutine(
+                db.getExercise(name, mode) ?: throw Error("Exercise '${name}' '${mode}' does not exist"),
+                sets,
+                minReps,
+                maxReps
+            )
+        }
+
+
+        viewModelScope.launch {
+
+            val savedText: String = preferencesManager.trainingData.first() ?: throw Error("Not training save")
+
+            Log.d("DEV", "Llega con texto '$savedText'")
+
+            val parts = savedText.split(ESPACER)
+            if (parts.size < 7) throw Error("Invalid values")
+
+            var index = 0
+
+            // Actual routine
+            val routineId = parts[index++].toLongOrNull() ?: 0L
+            _routine.value = if (routineId != 0L) db.getRoutineById(routineId) else null
+
+            // Actual training
+            val trainingExercises = mutableListOf<TrainingExercise>()
+            if (parts[index].isNotEmpty()) {
+                parts[index].split(",,").forEach { exerciseText ->
+                    val exerciseParts = exerciseText.split("~~")
+                    val name = exerciseParts[0]
+                    val mode = exerciseParts[1]
+                    trainingExercises.add(
+                        TrainingExercise(
+                            db.getExercise(name, mode) ?: throw Error("Exercise '${name}' '${mode}' does not exist"),
+                            null,
+                            exerciseParts[2].split(",").map {
+                                val setParts = it.split("x")
+                                ExerciseSet(
+                                    setParts[0].toDoubleOrNull() ?: throw Error("Incorrect weight in '${it}'"),
+                                    setParts[1].toIntOrNull() ?: throw Error("Incorrect reps in '${it}'"),
+                                    -1)
+                            }.toMutableList()
+                        )
+                    )
+                }
+            }
+            _training.value = Training(LocalDate.now(), trainingExercises, _routine.value, false)
+
+            index++
+
+            // Routine exercise index
+            _actualRoutineExerciseRoutineIndex.value = parts[index++].toIntOrNull() ?: throw Error("Invalid index")
+
+            // Actual exercise routine
+            _actualExerciseRoutine.value = parseExerciseRoutine(parts[index++])
+
+            // Actual training exercise
+            _actualTrainingExercise.value = TrainingExercise(
+                _actualExerciseRoutine.value!!.exercise,
+                null,
+                parts[index++]
+                    .takeIf { it.isNotEmpty() }
+                    ?.split(",")
+                    ?.map {
+                        val setParts = it.split("x")
+                        ExerciseSet(
+                            setParts[0].toDoubleOrNull() ?: throw Error("Incorrect weight in '${it}'"),
+                            setParts[1].toIntOrNull() ?: throw Error("Incorrect reps in '${it}'"),
+                            -1)
+                    }
+                    ?.toMutableList()
+                    ?: mutableListOf()
+            )
+
+            // Remaining sets
+            _remainingExerciseSets.value = parts[index++].toIntOrNull() ?: throw Error("Invalid remaining sets")
+
+            // Historical of exercises screens
+            historicalExercises = parts[index++]
+                .takeIf { it.isNotEmpty() }
+                ?.split(",,")
+                ?.map {
+                    if (it == "x") null
+                    else {
+                        Log.d("DEV", "ANTES: '$it'")
+                        val parts = it.split("~~")
+                        ExerciseRoutineHistorical(
+                            parseExerciseRoutine(parts.dropLast(1).joinToString("~~")),
+                            parts.last() == "t"
+                        )
+                    }
+                }
+                ?.toMutableList()
+                ?: mutableListOf()
+
+            // Navigate to the correct window
+            updateExerciseHistorical()
+            NavigateManager.navigateTo(GimScreens.SelectRoutine)
+            NavigateManager.navigateTo(GimScreens.NextExercise)
+            if (_actualTrainingExercise.value!!.sets.isNotEmpty()) {
+                Log.d("DEV", "Entra en onset")
+                NavigateManager.navigateTo(GimScreens.OnSet)
+            }
         }
     }
 

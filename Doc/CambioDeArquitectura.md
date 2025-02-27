@@ -4,6 +4,7 @@ CAMBIO DE ARQUITECTURA A MVVM
 - Comprobar que pasa con modos largos en todas las ventanas
 - Arreglar navegacion al añadir un ejercicio
 - Confirmacion de si se quiere hacer otra serie de un ejercicio al terminarlo
+- Añadir en la vista de rutinas, cuando creas una rutina nueva, que puedas añadir ejericios y modos, ahora el boton no hace nada
 - Corregir que al añadir un ejercicio en un entrenamiento, si lo añades a otro músculo que no salga en la lista. Se puede cambiar la lista y q salga el otro grupo muscular
 - A la hora de mostrar los entrenos, si es distinto modo q se vea, q no sume las series
 - Cambiar el otra por serie + y un dilaog para avisar si quieres acabar la serie

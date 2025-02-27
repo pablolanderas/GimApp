@@ -1,5 +1,7 @@
 package com.example.gimapp.views.menu
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -50,6 +52,7 @@ fun MenuButton(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainMenu(viewModel: TrainingViewModel) {
     val context = LocalContext.current
@@ -59,12 +62,13 @@ fun MainMenu(viewModel: TrainingViewModel) {
     ) {
         MenuButton(text = "Nuevo entrenamiento") { viewModel.startNewTraining() }
         MenuButton(text = "Historial") { NavigateManager.navigateTo(GimScreens.Historical) }
-        MenuButton(text = "Rutinas")
+        MenuButton(text = "Rutinas") { NavigateManager.navigateTo(GimScreens.SeeRoutines) }
         MenuButton(text = "Ejercicios") { NavigateManager.navigateTo(GimScreens.SeeExercises) }
-        MenuButton(text = "Ajustes" )
+        MenuButton(text = "Ajustes" ) { viewModel.restoreTrainingDataPreferences() }
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showSystemUi = true)
 @Composable
 fun PreviewPaginaInicio() {
